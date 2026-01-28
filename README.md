@@ -145,15 +145,15 @@ cd /chemin/vers/RFP
 # Le script utilise uniquement des modules Python standard
 ```
 
-### Exécution
+### Exécution - Mode Batch
 
-Le script utilise une interface de ligne de commande avec des arguments requis et optionnels:
+Le script principal utilise une interface de ligne de commande avec des arguments requis et optionnels:
 
 ```bash
 python generate_cdr.py --type <TYPE> [--file NUM_FILES] [--records NUM_RECORDS]
 ```
 
-#### Arguments:
+#### Arguments (Mode Batch):
 
 - `--type` **(requis)** : Type de CDR à générer
   - `voice` : Générer uniquement des Voice CDR
@@ -166,7 +166,7 @@ python generate_cdr.py --type <TYPE> [--file NUM_FILES] [--records NUM_RECORDS]
 - `--records` (optionnel) : Nombre d'enregistrements par fichier
   - Défaut: 10,000 pour voice, 5,000 pour sms, 3,000 pour data
 
-#### Exemples d'utilisation:
+#### Exemples d'utilisation (Mode Batch):
 
 ```bash
 # Générer uniquement 5 fichiers Voice CDR avec 1000 enregistrements chacun
@@ -181,6 +181,55 @@ python generate_cdr.py --type all
 # Générer 2 fichiers Data CDR avec 5000 enregistrements chacun
 python generate_cdr.py --type data --file 2 --records 5000
 ```
+
+### Exécution - Mode Streaming
+
+Le script de streaming génère les fichiers de manière continue à intervalles aléatoires jusqu'à l'arrêt de l'utilisateur (Ctrl+C):
+
+```bash
+python streaming_generate_cdr.py --type <TYPE> [--records NUM_RECORDS] [--min-delay SEC] [--max-delay SEC]
+```
+
+#### Arguments (Mode Streaming):
+
+- `--type` **(requis)** : Type de CDR à générer
+  - `voice` : Générer uniquement des Voice CDR
+  - `sms` : Générer uniquement des SMS CDR
+  - `data` : Générer uniquement des Data CDR
+  - `all` : Générer tous les types aléatoirement
+
+- `--records` (optionnel) : Nombre d'enregistrements par fichier
+  - Défaut: 10,000 pour voice, 5,000 pour sms, 3,000 pour data
+
+- `--min-delay` (optionnel) : Délai minimum entre les générations en secondes (défaut: 10s)
+
+- `--max-delay` (optionnel) : Délai maximum entre les générations en secondes (défaut: 120s)
+
+#### Exemples d'utilisation (Mode Streaming):
+
+```bash
+# Générer des Voice CDR toutes les 10-120 secondes (délai par défaut)
+python streaming_generate_cdr.py --type voice
+
+# Générer des SMS CDR toutes les 5-30 secondes avec 2000 enregistrements
+python streaming_generate_cdr.py --type sms --records 2000 --min-delay 5 --max-delay 30
+
+# Générer tous les types aléatoirement toutes les 10-60 secondes
+python streaming_generate_cdr.py --type all --min-delay 10 --max-delay 60
+
+# Générer des Data CDR toutes les 20-90 secondes
+python streaming_generate_cdr.py --type data --min-delay 20 --max-delay 90
+
+# Arrêter le processus
+# Appuyer sur Ctrl+C pour arrêter le générateur et voir le résumé final
+```
+
+**Caractéristiques du Mode Streaming:**
+- ✅ Génère les fichiers en continu jusqu'à l'arrêt de l'utilisateur
+- ✅ Délais aléatoires entre les générations pour simuler un trafic réaliste
+- ✅ Si `--type all` est spécifié, alterne aléatoirement entre les types de CDR
+- ✅ Affiche les statistiques en temps réel (timestamp, compteurs, délai suivant)
+- ✅ Résumé final des fichiers générés lors de l'arrêt
 
 ### Sortie
 
@@ -224,6 +273,7 @@ Le générateur CDR a été restructuré en modules spécialisés pour améliore
 ├── generators.py           # Génération des CDR (Voice, SMS, Data)
 ├── utils.py                # Utilitaires (CSV, répertoires)
 ├── README.md               # Documentation
+├── streaming_generate_cdr.py # Mode streaming (temps réel)
 └── cdr_data/               # Répertoire de sortie (créé automatiquement)
     ├── cell_towers_mali.csv
     ├── voice_cdr_mali_01.csv
@@ -249,7 +299,7 @@ Contient toutes les constantes et configurations du projet:
 
 #### `cli.py`
 Gère l'interface de ligne de commande:
-- Analyse des arguments `--type`, `--file`, et `--records`
+- Analyse des arguments `--type`, `--file`, `--records`, `--min-delay`, et `--max-delay`
 - Validation des paramètres
 - Affichage de l'aide et des exemples
 
@@ -267,19 +317,51 @@ Contient les fonctions utilitaires:
 - `ensure_output_dir()` : Crée le répertoire de sortie
 
 #### `generate_cdr.py`
-Point d'entrée principal qui orchestrate tout:
+Point d'entrée principal (mode batch) qui orchestrate tout:
 - Parse les arguments de ligne de commande
 - Initialise les répertoires
 - Appelle les générateurs appropriés selon le type sélectionné
 - Affiche un résumé des fichiers générés
 
+#### `streaming_generate_cdr.py`
+Point d'entrée pour le mode streaming qui génère les fichiers en continu:
+- Parse les arguments incluant `--min-delay` et `--max-delay`
+- Initialise les tours cellulaires
+- Boucle infinie qui génère les fichiers à intervales aléatoires
+- Affiche les statistiques en temps réel
+- Capture Ctrl+C pour afficher le résumé final
+
 ### Avantages de cette architecture
 
-- **Modularité** : Chaque module a une responsabilité unique  
-- **Maintenabilité** : Facile à modifier et à debugger  
-- **Extensibilité** : Simple d'ajouter de nouveaux types de CDR  
-- **Réutilisabilité** : Les modules peuvent être importés et utilisés indépendamment  
-- **Testabilité** : Chaque fonction peut être testée isolément
+✅ **Modularité** : Chaque module a une responsabilité unique  
+✅ **Maintenabilité** : Facile à modifier et à debugger  
+✅ **Extensibilité** : Simple d'ajouter de nouveaux types de CDR  
+✅ **Réutilisabilité** : Les modules peuvent être importés et utilisés indépendamment  
+✅ **Testabilité** : Chaque fonction peut être testée isolément  
+✅ **Flexibilité** : Support de deux modes d'exécution (batch et streaming)
+
+---
+
+## Modes d'Exécution
+
+### Mode Batch (generate_cdr.py)
+
+Génère un nombre prédéfini de fichiers et s'arrête automatiquement.
+
+**Cas d'usage :**
+- Générer des datasets de démonstration
+- Tests en batch
+- Ingestion planifiée de données
+
+### Mode Streaming (streaming_generate_cdr.py)
+
+Génère les fichiers en continu à intervalles aléatoires jusqu'à l'arrêt de l'utilisateur.
+
+**Cas d'usage :**
+- Simulation de trafic réseau en temps réel
+- Tests de pipelines de streaming
+- Alimentation continue d'une plateforme Big Data
+- Démonstration de capacités de streaming
 
 ---
 
@@ -287,7 +369,11 @@ Point d'entrée principal qui orchestrate tout:
 
 ### Vue d'Ensemble
 
-Le générateur CDR est un script Python qui crée automatiquement des données télécoms réalistes pour démontrer une plateforme Big Data. Il simule le trafic d'un réseau mobile réel sur 10 heures d'activité à travers toutes les régions du Mali.
+Le générateur CDR est un script Python qui crée automatiquement des données télécoms réalistes pour démontrer une plateforme Big Data. Il simule le trafic d'un réseau mobile réel à travers toutes les régions du Mali.
+
+**Deux modes disponibles:**
+- **Batch**: Génère un nombre défini de fichiers rapidement
+- **Streaming**: Génère les fichiers de manière continue avec des délais réalistes
 
 ### Architecture Modulaire
 
