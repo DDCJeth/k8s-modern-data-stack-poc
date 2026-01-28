@@ -1,0 +1,17 @@
+services:
+  cdr-generator:
+    build: .
+    image: poc_rfp_omea/cdr-generator:latest
+    container_name: cdr-generator
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./cdr_data:/app/cdr_data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
