@@ -4,6 +4,11 @@
 
 Ce projet génère des données CDR (Call Detail Records) synthétiques pour démontrer une architecture de data lakehouse moderne. Il produit des enregistrements réalistes de Voice, SMS et Data, couvrant les 8 régions du pays.
 
+**3 façons d'accéder au générateur:**
+- 🖥️ **Interface Web**: Application Streamlit ergonomique
+- 💻 **Mode Batch**: Script Python pour génération rapide
+- 🔄 **Mode Streaming**: Script Python pour trafic continu
+
 ### Objectif du Projet
 
 Fournir des données de démonstration pour l'évaluation de plateformes Big Data capables de:
@@ -141,9 +146,50 @@ Le générateur crée des données pour les **8 régions administratives du Mali
 # Cloner ou télécharger le projet
 cd /chemin/vers/RFP
 
-# Aucune dépendance externe requise
-# Le script utilise uniquement des modules Python standard
+# Aucune dépendance externe requise pour batch/streaming
+# Streamlit est optionnel mais recommandé pour l'interface web
 ```
+
+## 🖥️ Web Application (Streamlit)
+
+### Accès Rapide
+
+```bash
+# Depuis le répertoire streamlitapp
+cd streamlitapp
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Ou utilisez le script fourni:
+```bash
+cd streamlitapp
+chmod +x run.sh
+./run.sh
+```
+
+L'application sera accessible à `http://localhost:8501`
+
+### Avantages de l'Interface Web
+
+✅ **Ergonomique**: Interface intuitive et visuelle  
+✅ **Contrôle Facile**: Paramètres facilement ajustables  
+✅ **Monitoring**: Sortie console en temps réel  
+✅ **Flexible**: Support batch et streaming depuis la même app  
+✅ **Intégré**: Utilise les mêmes scripts que la CLI  
+
+### Features Web App
+
+- 📊 Mode Batch et Streaming
+- 🎙️ Sélection du type de CDR (Voice, SMS, Data, All)
+- ⏱️ Délais configurables pour streaming
+- 🎛️ Ajustement en temps réel des paramètres
+- 📈 Monitoring en direct de la génération
+- ⏹️ Contrôle Start/Stop
+- 📋 Aperçu de la configuration
+
+Pour plus de détails, voir [streamlitapp/README.md](streamlitapp/README.md)
+
 
 ### Exécution - Mode Batch
 
@@ -262,12 +308,37 @@ cdr_data/
 
 ## Architecture Modulaire
 
-Le générateur CDR a été restructuré en modules spécialisés pour améliorer la maintenabilité et l'extensibilité:
+Le générateur CDR a été restructuré en modules spécialisés pour améliorer la maintenabilité et l'extensibilité.
 
-### Structure des fichiers
+### Structure générale du projet
 
 ```
-├── generate_cdr.py          # Point d'entrée principal
+Poc_rfp_omea/
+├── scripts/                         # Modules Python (batch/streaming)
+│   ├── generate_cdr.py             # Mode batch
+│   ├── streaming_generate_cdr.py    # Mode streaming
+│   ├── config.py                   # Configuration
+│   ├── generators.py               # Générateurs CDR
+│   ├── utils.py                    # Utilitaires
+│   └── cli.py                      # Interface CLI
+├── streamlitapp/                    # Application Web
+│   ├── app.py                      # Application Streamlit
+│   ├── requirements.txt            # Dépendances
+│   ├── run.sh                      # Script de lancement
+│   ├── README.md                   # Documentation
+│   └── .streamlit/
+│       └── config.toml             # Configuration Streamlit
+├── cdr_data/                       # Répertoire de sortie (généré)
+├── README.md                       # Ce fichier
+└── requirements.txt                # Dépendances principales
+```
+
+### Structure des fichiers de scripts
+
+```
+scripts/
+├── generate_cdr.py          # Point d'entrée principal (batch)
+├── streaming_generate_cdr.py # Point d'entrée streaming
 ├── config.py               # Configuration et constantes
 ├── cli.py                  # Interface de ligne de commande
 ├── generators.py           # Génération des CDR (Voice, SMS, Data)
