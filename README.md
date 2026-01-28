@@ -1,8 +1,8 @@
-# Orange Mali - Générateur de Données CDR pour Démo RFP
+# Telco - Générateur de Données CDR pour Démo RFP
 
 ## Vue d'ensemble
 
-Ce projet génère des données CDR (Call Detail Records) synthétiques pour démontrer une architecture de data lakehouse moderne pour Orange Mali. Il produit des enregistrements réalistes de Voice, SMS et Data, couvrant les 8 régions du Mali.
+Ce projet génère des données CDR (Call Detail Records) synthétiques pour démontrer une architecture de data lakehouse moderne. Il produit des enregistrements réalistes de Voice, SMS et Data, couvrant les 8 régions du pays.
 
 ### Objectif du Projet
 
@@ -133,7 +133,7 @@ Le générateur crée des données pour les **8 régions administratives du Mali
 ### Prérequis
 
 - Python 3.7+
-- Bibliothèques standard Python (csv, random, datetime, pathlib)
+- Bibliothèques standard Python (csv, random, datetime, pathlib, argparse)
 
 ### Installation
 
@@ -147,8 +147,39 @@ cd /chemin/vers/RFP
 
 ### Exécution
 
+Le script utilise une interface de ligne de commande avec des arguments requis et optionnels:
+
 ```bash
-python generate_cdr_data.py
+python generate_cdr.py --type <TYPE> [--file NUM_FILES] [--records NUM_RECORDS]
+```
+
+#### Arguments:
+
+- `--type` **(requis)** : Type de CDR à générer
+  - `voice` : Générer uniquement des Voice CDR
+  - `sms` : Générer uniquement des SMS CDR
+  - `data` : Générer uniquement des Data CDR
+  - `all` : Générer tous les types de CDR
+
+- `--file` (optionnel) : Nombre de fichiers à générer (défaut: 10)
+
+- `--records` (optionnel) : Nombre d'enregistrements par fichier
+  - Défaut: 10,000 pour voice, 5,000 pour sms, 3,000 pour data
+
+#### Exemples d'utilisation:
+
+```bash
+# Générer uniquement 5 fichiers Voice CDR avec 1000 enregistrements chacun
+python generate_cdr.py --type voice --file 5 --records 1000
+
+# Générer 3 fichiers SMS CDR avec 2000 enregistrements chacun
+python generate_cdr.py --type sms --file 3 --records 2000
+
+# Générer tous les types de CDR avec les valeurs par défaut (10 fichiers)
+python generate_cdr.py --type all
+
+# Générer 2 fichiers Data CDR avec 5000 enregistrements chacun
+python generate_cdr.py --type data --file 2 --records 5000
 ```
 
 ### Sortie
@@ -177,6 +208,78 @@ cdr_data/
 - SMS CDR: **50,000 enregistrements** (10 fichiers × 5,000)
 - Data CDR: **30,000 enregistrements** (10 fichiers × 3,000)
 - Cell Towers: **10 tours** (1 fichier)
+
+---
+
+## Architecture Modulaire
+
+Le générateur CDR a été restructuré en modules spécialisés pour améliorer la maintenabilité et l'extensibilité:
+
+### Structure des fichiers
+
+```
+├── generate_cdr.py          # Point d'entrée principal
+├── config.py               # Configuration et constantes
+├── cli.py                  # Interface de ligne de commande
+├── generators.py           # Génération des CDR (Voice, SMS, Data)
+├── utils.py                # Utilitaires (CSV, répertoires)
+├── README.md               # Documentation
+└── cdr_data/               # Répertoire de sortie (créé automatiquement)
+    ├── cell_towers_mali.csv
+    ├── voice_cdr_mali_01.csv
+    ├── voice_cdr_mali_02.csv
+    ├── ...
+    ├── sms_cdr_mali_01.csv
+    ├── sms_cdr_mali_02.csv
+    ├── ...
+    ├── data_cdr_mali_01.csv
+    ├── data_cdr_mali_02.csv
+    └── ...
+```
+
+### Description des modules
+
+#### `config.py`
+Contient toutes les constantes et configurations du projet:
+- Définition des régions et tours cellulaires du Mali
+- Types d'appels, SMS et sessions data
+- Raisons de terminaison et statuts de livraison
+- Champs CSV pour chaque type de CDR
+- Valeurs par défaut pour le nombre de fichiers et d'enregistrements
+
+#### `cli.py`
+Gère l'interface de ligne de commande:
+- Analyse des arguments `--type`, `--file`, et `--records`
+- Validation des paramètres
+- Affichage de l'aide et des exemples
+
+#### `generators.py`
+Contient les fonctions de génération des CDR:
+- `generate_msisdn()` : Génère des numéros de téléphone maliens
+- `generate_voice_cdr()` : Génère les enregistrements d'appels
+- `generate_sms_cdr()` : Génère les enregistrements de SMS
+- `generate_data_cdr()` : Génère les enregistrements de sessions data
+
+#### `utils.py`
+Contient les fonctions utilitaires:
+- `save_to_csv()` : Sauvegarde les enregistrements dans un fichier CSV
+- `generate_cell_towers_csv()` : Génère le fichier des tours cellulaires
+- `ensure_output_dir()` : Crée le répertoire de sortie
+
+#### `generate_cdr.py`
+Point d'entrée principal qui orchestrate tout:
+- Parse les arguments de ligne de commande
+- Initialise les répertoires
+- Appelle les générateurs appropriés selon le type sélectionné
+- Affiche un résumé des fichiers générés
+
+### Avantages de cette architecture
+
+- **Modularité** : Chaque module a une responsabilité unique  
+- **Maintenabilité** : Facile à modifier et à debugger  
+- **Extensibilité** : Simple d'ajouter de nouveaux types de CDR  
+- **Réutilisabilité** : Les modules peuvent être importés et utilisés indépendamment  
+- **Testabilité** : Chaque fonction peut être testée isolément
 
 ---
 
@@ -363,9 +466,9 @@ Le générateur respecte les normes de l'industrie télécoms (3GPP pour les CDR
 
 ## Licence et Contact
 
-**Projet:** Orange Mali RFP Demo - Générateur CDR
+**Projet:**  RFP Demo - Générateur CDR
 **Version:** 1.0
 **Date:** Décembre 2024
-**Contact:** Orange Mali - Direction Technique
+**Contact:**  - Direction Technique
 
 ---
