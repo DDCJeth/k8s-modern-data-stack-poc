@@ -1,0 +1,15 @@
+{
+  "type": "struct",
+  "fields": [
+    { "name": "timestamp", "type": "timestamp", "nullable": true, "metadata": {} },
+    { "name": "call_id", "type": "string", "nullable": true, "metadata": {} },
+    { "name": "caller_msisdn", "type": "string", "nullable": true, "metadata": {} },
+    { "name": "callee_msisdn", "type": "string", "nullable": true, "metadata": {} },
+    { "name": "call_type", "type": "string", "nullable": true, "metadata": {} },
+    { "name": "duration_seconds", "type": "integer", "nullable": true, "metadata": {} },
+    { "name": "cell_id", "type": "string", "nullable": true, "metadata": {} },
+    { "name": "region", "type": "string", "nullable": true, "metadata": {} },
+    { "name": "termination_reason", "type": "string", "nullable": true, "metadata": {} },
+    { "name": "charging_amount", "type": "decimal(10,2)", "nullable": true, "metadata": {} }
+  ]
+}
