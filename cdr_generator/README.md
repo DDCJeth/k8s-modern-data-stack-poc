@@ -1,4 +1,4 @@
-# DATA ENGINEERING POC
+# Telco - Générateur de Données CDR pour Démo RFP
 
 ## Vue d'ensemble
 
@@ -18,10 +18,120 @@ Fournir des données de démonstration pour l'évaluation de plateformes Big Dat
 - Fournir des capacités d'analytics interactives et de visualisation
 ---
 
-## Structure du Projet
+## Structure des Données
 
 ### 1. Voice CDR (voice_cdr_mali_XX.csv)
 
+**Schéma:**
+```csv
+timestamp, call_id, caller_msisdn, callee_msisdn, call_type, duration_seconds,
+cell_id, region, termination_reason, charging_amount
+```
+
+**Types d'Appels:**
+- **MOC** (Mobile Originated Call) - Appel sortant, facturé
+- **MTC** (Mobile Terminated Call) - Appel entrant, gratuit
+
+**Raisons de Terminaison:**
+- `NORMAL` - Appel terminé avec succès
+- `FAILED` - Échec de connexion
+- `USER_TERMINATED` - Utilisateur raccroche prématurément
+- `NO_ANSWER` - Pas de réponse
+- `NETWORK_ERROR` - Erreur réseau
+
+**Tarification:** 0.5 FCFA/seconde pour les appels sortants (MOC)
+
+**Exemple:**
+```csv
+2024-12-14T08:15:23,CALL_001,22370123456,22376234567,MOC,345,CELL_BAM_001,Bamako,NORMAL,172.5
+```
+
+### 2. SMS CDR (sms_cdr_mali_XX.csv)
+
+**Schéma:**
+```csv
+timestamp, sms_id, sender_msisdn, receiver_msisdn, sms_type, message_length,
+cell_id, region, delivery_status, charging_amount
+```
+
+**Types de SMS:**
+- **MO** (Mobile Originated) - SMS sortant, facturé
+- **MT** (Mobile Terminated) - SMS entrant, gratuit
+
+**Statuts de Livraison:**
+- `DELIVERED` - SMS livré avec succès
+- `FAILED` - Échec de livraison
+- `PENDING` - En attente de livraison
+
+**Tarification:** 25 FCFA par SMS envoyé (MO)
+
+**Exemple:**
+```csv
+2024-12-14T08:15:30,SMS_001,22370123456,22376234567,MO,45,CELL_BAM_001,Bamako,DELIVERED,25.0
+```
+
+### 3. Data Session CDR (data_cdr_mali_XX.csv)
+
+**Schéma:**
+```csv
+timestamp, session_id, msisdn, apn, session_duration_seconds, bytes_uploaded,
+bytes_downloaded, cell_id, region, session_end_reason, charging_amount
+```
+
+**Types d'APN:**
+- `internet.mali` - Navigation web standard
+- `mms.mali` - Multimédia Messaging Service
+- `wap.mali` - WAP (mobile browsing legacy)
+
+**Raisons de Fin de Session:**
+- `NORMAL` - Session terminée normalement
+- `USER_TERMINATED` - Utilisateur déconnecte
+- `QUOTA_EXCEEDED` - Quota de données épuisé
+- `NETWORK_ERROR` - Erreur réseau
+- `TIMEOUT` - Timeout de session
+
+**Tarification:** Variable selon l'APN (0.0001 - 0.0002 FCFA/KB)
+
+**Exemple:**
+```csv
+2024-12-14T08:15:00,DATA_001,22370123456,internet.mali,3600,52428800,524288000,CELL_BAM_001,Bamako,NORMAL,500.0
+```
+
+### 4. Tours Cellulaires (cell_towers_mali.csv)
+
+**Schéma:**
+```csv
+cell_id, region, province, latitude, longitude, technology, capacity_erlang
+```
+
+**Technologies Déployées:**
+- **4G** - Zones urbaines (Bamako, Segou, Mopti)
+- **3G** - Villes moyennes (Sikasso, Kayes, Tombouctou, Gao)
+- **2G** - Zones reculées (Kidal)
+
+**Exemple:**
+```csv
+CELL_BAM_001,Bamako,Bamako Capital,12.6392,-8.0029,4G,150
+```
+
+---
+
+## Régions Couvertes
+
+Le générateur crée des données pour les **8 régions administratives du Mali** :
+
+| Région | Capitale | Technologie | Coordonnées GPS | Code Cell |
+|--------|----------|-------------|-----------------|-----------|
+| **Bamako** | Bamako | 4G/3G | 12.6392°N, 8.0029°W | CELL_BAM |
+| **Segou** | Ségou | 4G | 13.4317°N, 6.2664°W | CELL_SEG |
+| **Sikasso** | Sikasso | 3G | 11.3177°N, 5.6661°W | CELL_SIK |
+| **Kayes** | Kayes | 3G | 14.4474°N, 11.4448°W | CELL_KAY |
+| **Mopti** | Mopti | 4G | 14.4844°N, 4.1966°W | CELL_MOP |
+| **Tombouctou** | Tombouctou | 3G | 16.7734°N, 3.0074°W | CELL_TOM |
+| **Gao** | Gao | 3G | 16.2719°N, 0.0447°W | CELL_GAO |
+| **Kidal** | Kidal | 2G | 18.4411°N, 1.4078°E | CELL_KID |
+
+---
 
 ## Installation et Utilisation
 

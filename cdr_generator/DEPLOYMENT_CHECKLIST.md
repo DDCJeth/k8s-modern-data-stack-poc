@@ -13,7 +13,7 @@
 - [ ] `scripts/` folder exists
 - [ ] `streamlitapp/app.py` present (500+ lines)
 - [ ] `streamlitapp/requirements.txt` present
-- [ ] `scripts/generate_cdr.py` present
+- [ ] `scripts/bash_generate_cdr.py` present
 - [ ] `scripts/streaming_generate_cdr.py` present
 
 ### Documentation
@@ -130,7 +130,6 @@ wc -l cdr_data/voice_cdr_mali_01.csv
 ### User Documentation
 - [ ] README.md is complete and linked
 - [ ] QUICKSTART.md has working examples
-- [ ] INSTALL.md installation steps work
 - [ ] streamlitapp/README.md is comprehensive
 
 ### Developer Documentation

@@ -23,7 +23,9 @@ Puis ouvrez votre navigateur à `http://localhost:8501`
 
 ---
 
-### 2. 💻 Mode Batch (Rapide et Prédictible)
+### 2. Script (Manuellement)
+
+#### 1. 💻 Mode Batch (Rapide et Prédictible)
 
 **Avantages:** Rapide, idéal pour les démos, généraux définis
 
@@ -31,27 +33,27 @@ Puis ouvrez votre navigateur à `http://localhost:8501`
 cd scripts
 
 # Générer 10 fichiers Voice CDR (par défaut)
-python3 generate_cdr.py --type voice
+python3 bash_generate_cdr.py --type voice
 
 # Générer 5 fichiers SMS avec 2000 enregistrements chacun
-python3 generate_cdr.py --type sms --file 5 --records 2000
+python3 bash_generate_cdr.py --type sms --file 5 --records 2000
 
 # Générer tous les types (10 fichiers par défaut)
-python3 generate_cdr.py --type all
+python3 bash_generate_cdr.py --type all
 ```
 
 **Exemples courants:**
 
 | Cas d'usage | Commande |
 |---|---|
-| Demo rapide (1-5 min) | `python3 generate_cdr.py --type voice --file 3 --records 1000` |
-| Dataset complet | `python3 generate_cdr.py --type all --file 10` |
-| Petit test | `python3 generate_cdr.py --type data --file 1 --records 500` |
-| Gros volume | `python3 generate_cdr.py --type all --file 20 --records 50000` |
+| Demo rapide (1-5 min) | `python3 bash_generate_cdr.py --type voice --file 3 --records 1000` |
+| Dataset complet | `python3 bash_generate_cdr.py --type all --file 10` |
+| Petit test | `python3 bash_generate_cdr.py --type data --file 1 --records 500` |
+| Gros volume | `python3 bash_generate_cdr.py --type all --file 20 --records 50000` |
 
 ---
 
-### 3. 🔄 Mode Streaming (Continu et Réaliste)
+#### 2. 🔄 Mode Streaming (Continu et Réaliste)
 
 **Avantages:** Simule le trafic réel, idéal pour les tests streaming
 
@@ -116,22 +118,22 @@ wc -l cdr_data/*.csv
 cd streamlitapp && streamlit run app.py
 
 # Ou batch - Rapide
-python3 scripts/generate_cdr.py --type all --file 5
+python3 scripts/bash_generate_cdr.py --type all --file 5
 ```
 
 ### Pour les Tests
 ```bash
 # Petit volume
-python3 scripts/generate_cdr.py --type voice --file 1 --records 100
+python3 scripts/bash_generate_cdr.py --type voice --file 1 --records 100
 
 # Test complet
-python3 scripts/generate_cdr.py --type all --file 3
+python3 scripts/bash_generate_cdr.py --type all --file 3
 ```
 
 ### Pour la Production/Integration Continue
 ```bash
 # Mode batch programmé
-python3 scripts/generate_cdr.py --type all --file 10
+python3 scripts/bash_generate_cdr.py --type all --file 10
 
 # Mode streaming continu
 python3 scripts/streaming_generate_cdr.py --type all --min-delay 30 --max-delay 120
@@ -158,13 +160,3 @@ python3 scripts/streaming_generate_cdr.py --type all --min-delay 30 --max-delay 
 - **scripts/** - Code source des générateurs
 
 ---
-
-## ✨ Prochaines Étapes
-
-1. ✅ Générer des données CDR
-2. 📥 Importer dans votre plateforme Big Data
-3. 🔍 Analyser les données
-4. 📊 Créer des visualisations
-5. 📈 Tester les cas d'usage
-
-Bon développement! 🚀
