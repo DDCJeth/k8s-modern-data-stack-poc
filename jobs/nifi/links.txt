@@ -1,0 +1,2 @@
+https://nifi.apache.org/docs/nifi-docs/html/expression-language-guide.html
+https://www.youtube.com/watch?v=RHFkCtbe3kc

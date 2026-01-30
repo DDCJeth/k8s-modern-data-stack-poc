@@ -3,3 +3,6 @@ cdr.ipynb
 cdr_data/
 __pycache__/
 .venv/
+jobs/spark/spark-iceberg-project/project/project/
+jobs/spark/spark-iceberg-project/project/target/
+jobs/spark/spark-iceberg-project/target
