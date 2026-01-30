@@ -8,7 +8,7 @@ object CreateIcebergTable extends Logging {
 
   def main(args: Array[String]): Unit = {
     // Expected args: 1. s3_base_path (e.g. s3://datalake/schemas/) 
-    //                2. log_type (e.g. sms_logs)
+    //                2. log_type (e.g. voice ; data ; sms )
     if (args.length < 2) {
       logError("Usage: CreateIcebergTable <schema_base_path> <log_type>")
       sys.exit(1)
@@ -34,18 +34,38 @@ object CreateIcebergTable extends Logging {
       // 2. Add the ingestion_date column (since it's not in your raw schema files)
       val finalSchema = schema.add("ingestion_date", "date")
 
+      logInfo(s"Schema Loaded: $finalSchema")
+
+      logInfo(s"Creating Namespace 'cdr' if not exists")
       // 3. Create Namespace
       spark.sql("CREATE NAMESPACE IF NOT EXISTS cdr")
+
+      logInfo(s" Namespace created or already exists.")
 
       // 4. Build and Execute Table Creation
       logInfo(s"Creating Iceberg table: $tableName")
       
-      // We create an empty DataFrame with the schema to use the high-level API
-      spark.createDataFrame(spark.sparkContext.emptyRDD[org.apache.spark.sql.Row], finalSchema)
-        .writeTo(tableName)
-        .tableProperty("write.format.default", "parquet")
-        .partitionedBy(days(col("timestamp")))
-        .createOrReplace()
+      // 1. Convert the StructType fields into a comma-separated SQL string
+      // Example: "timestamp TIMESTAMP, sms_id STRING, ingestion_date DATE"
+      val ddlSchema = finalSchema.fields.map { field =>
+        s"`${field.name}` ${field.dataType.sql}"
+      }.mkString(", ")
+
+      // 2. Execute the CREATE TABLE statement
+      logInfo(s"Executing SQL to create Iceberg table: $tableName")
+
+      spark.sql(
+        s"""
+          |CREATE TABLE IF NOT EXISTS $tableName (
+          |  $ddlSchema
+          |)
+          |USING iceberg
+          |PARTITIONED BY (days(timestamp))
+          |TBLPROPERTIES (
+          |  'write.format.default'='parquet'
+          |)
+        """.stripMargin
+      )
 
       logInfo(s"Successfully created/verified table $tableName")
 

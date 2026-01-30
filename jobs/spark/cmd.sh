@@ -6,7 +6,28 @@ spark-shell \
   --master local[*] \
 
 
+./spark-submit \
+  --class CreateIcebergTable \
+  /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-iceberg-project/target/scala-2.13/app.jar \
+  s3a://datalake/schemas/ \
+  voice
 
+
+./spark-submit \
+  --class LoadToIceberg \
+  /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-iceberg-project/target/scala-2.13/app.jar \
+  s3a://datalake/voice/ \
+  voice \
+  cdr.voice
+
+
+
+./spark-submit \
+  --class LoadToIceberg \
+  /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-iceberg-project/target/scala-2.13/app.jar \
+  s3a://datalake/sms/ \
+  sms \
+  cdr.sms
 
 
 spark-submit \
