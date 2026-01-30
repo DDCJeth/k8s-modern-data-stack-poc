@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mc-init
+  namespace: omea
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mc-init
+          image: minio/mc:latest
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: omea-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: omea-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_REGION
+              value: "us-east-1"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              until (/usr/bin/mc alias set minio http://minio:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}) do echo '...waiting...' && sleep 1; done;
+              /usr/bin/mc rm -r --force minio/warehouse || true
+              /usr/bin/mc mb minio/warehouse
+              /usr/bin/mc mb minio/datalake
+              /usr/bin/mc policy set public minio/warehouse
+              /usr/bin/mc policy set public minio/datalake
+      # backoff limit can be tuned
+  backoffLimit: 3
