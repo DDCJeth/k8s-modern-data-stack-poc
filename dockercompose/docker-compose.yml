@@ -145,3 +145,7 @@ services:
         # Use the same IO implementation as Spark
         EOF
         /usr/lib/trino/bin/run-trino
+
+
+networks:
+  iceberg_net:

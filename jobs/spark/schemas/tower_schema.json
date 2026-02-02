@@ -1,0 +1,12 @@
+{
+  "type": "struct",
+  "fields": [
+    { "name": "cell_id", "type": "string", "nullable": true },
+    { "name": "region", "type": "string", "nullable": true },
+    { "name": "province", "type": "string", "nullable": true },
+    { "name": "latitude", "type": "float", "nullable": true },
+    { "name": "longitude", "type": "float", "nullable": true },
+    { "name": "technology", "type": "string", "nullable": true },
+    { "name": "capacity_erlang", "type": "long", "nullable": true }
+  ]
+}

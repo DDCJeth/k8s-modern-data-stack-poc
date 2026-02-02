@@ -2,6 +2,12 @@
 
 ```bash
 
+export SBT_OPTS="-Xms2G -Xmx4G -XX:+UseG1GC"
+
+export AWS_REGION=us-east-1
+export AWS_ACCESS_KEY_ID=admin
+export AWS_SECRET_ACCESS_KEY=password
+
 spark-shell \
   --master local[*] \
 
@@ -18,16 +24,23 @@ spark-shell \
   /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-iceberg-project/target/scala-2.13/app.jar \
   s3a://datalake/voice/ \
   voice \
-  cdr.voice
+  bronze.voice
+
+
+./spark-submit \
+  --class LoadVoiceSilverTable \
+  /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-iceberg-project/target/scala-2.13/app.jar \
+  "2026-02-02" \
+  bronze.voice \
+  silver.voice
 
 
 
 ./spark-submit \
-  --class LoadToIceberg \
+  --class LoadVoiceGoldTables \
   /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-iceberg-project/target/scala-2.13/app.jar \
-  s3a://datalake/sms/ \
-  sms \
-  cdr.sms
+  "2026-02-02" \
+  silver.voice 
 
 
 spark-submit \

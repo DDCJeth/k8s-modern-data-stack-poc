@@ -17,7 +17,7 @@ object CreateIcebergTable extends Logging {
     val schemaBasePath = args(0).stripSuffix("/")
     val logType        = args(1)
     val schemaPath     = s"$schemaBasePath/${logType}_schema.json"
-    val tableName      = s"cdr.$logType"
+    val tableName      = s"bronze.$logType"
 
     val spark = SparkSession.builder()
       .appName(s"Create Iceberg Table: $tableName")
@@ -36,9 +36,9 @@ object CreateIcebergTable extends Logging {
 
       logInfo(s"Schema Loaded: $finalSchema")
 
-      logInfo(s"Creating Namespace 'cdr' if not exists")
+      logInfo(s"Creating Namespace 'bronze' if not exists")
       // 3. Create Namespace
-      spark.sql("CREATE NAMESPACE IF NOT EXISTS cdr")
+      spark.sql("CREATE NAMESPACE IF NOT EXISTS bronze")
 
       logInfo(s" Namespace created or already exists.")
 

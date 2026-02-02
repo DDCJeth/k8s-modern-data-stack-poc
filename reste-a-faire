@@ -1,7 +1,8 @@
 
-- Faire une reunion avec le data viz pour avoir une idée des tables gold à créer
-- Tester les manifests pour le deploiement de l'architecture dans kubernetes
+
 - Deployer Airflow 3 et lancer les tests de spark operator
-- Faire les jobs spark pour les traitements batch
+- Tester les manifests pour le deploiement de l'architecture dans kubernetes
+- Faire les jobs spark pour les traitements batch (voice => OK ; sms => en cours; data => à faire)
+- Faire une reunion avec le data viz pour avoir une idée des tables gold à créer
 - Faire les jobs spark-streaming ou kafka streams pour le traitement streaming
 - Déployer kafka et ingerer les données dans un topic
