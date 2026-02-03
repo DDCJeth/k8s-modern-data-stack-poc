@@ -1,5 +1,5 @@
-\.worktrees/.*
-\.git/.*
+.worktrees/.*
+.git/.*
 cdr_generator/
 dockercompose/
 jobs/
