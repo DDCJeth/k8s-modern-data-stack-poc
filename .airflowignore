@@ -1,0 +1,9 @@
+\.worktrees/.*
+\.git/.*
+cdr_generator/
+dockercompose/
+jobs/
+k8s-manifests/
+README.md
+reste-a-faire
+cmd.md

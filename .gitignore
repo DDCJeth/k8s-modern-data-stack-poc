@@ -6,3 +6,4 @@ __pycache__/
 jobs/spark/spark-iceberg-project/project/project/
 jobs/spark/spark-iceberg-project/project/target/
 jobs/spark/spark-iceberg-project/target
+.env
