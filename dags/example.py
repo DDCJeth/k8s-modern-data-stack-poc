@@ -17,7 +17,7 @@ with DAG(
     'spark_pi_k8s_job',
     default_args=default_args,
     description='Submit SparkPi job via Spark Operator on K8s',
-    schedule_interval=None,  # Trigger manually
+    schedule=None,  # Trigger manually
     tags=['spark', 'kubernetes'],
     catchup=False,
 ) as dag:
