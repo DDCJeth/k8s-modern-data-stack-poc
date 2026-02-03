@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cdr-data-pvc
+  namespace: omea
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdr-generator
+  namespace: omea
+  labels:
+    app: cdr-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cdr-generator
+  template:
+    metadata:
+      labels:
+        app: cdr-generator
+    spec:
+      containers:
+        - name: cdr-generator
+          image: poc_rfp_omea/cdr-generator:latest
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - containerPort: 8501
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8501
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: cdr-data
+              mountPath: /app/cdr_data
+      volumes:
+        - name: cdr-data
+          persistentVolumeClaim:
+            claimName: cdr-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cdr-generator
+  namespace: omea
+  labels:
+    app: cdr-generator
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8501
+      targetPort: 8501
+  selector:
+    app: cdr-generator
