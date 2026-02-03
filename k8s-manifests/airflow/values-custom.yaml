@@ -1,0 +1,78 @@
+# Basic Configuration
+airflowVersion: "3.0.2"
+defaultAirflowTag: "3.0.2"
+executor: "KubernetesExecutor"
+
+# Permissions for SparkKubernetesOperator
+rbac:
+  create: true
+allowPodLaunching: true
+
+# Database & Redis
+postgresql:
+  enabled: true
+  auth:
+    enablePostgresUser: true
+    postgresPassword: postgres
+  # --- ADDED SECTION START ---
+  image:
+    tag: "latest" # Use the latest PostgreSQL image
+  # --- ADDED SECTION END ---
+
+redis:
+  enabled: true
+
+# Service Account for Workers to trigger Spark Jobs
+workers:
+  serviceAccount:
+    create: true
+    name: "airflow-worker-sa"
+  persistence:
+    enabled: true
+    size: 1Gi
+
+# Webserver Configuration
+webserver:
+  enabled: true
+  defaultUser:
+    enabled: true
+    role: Admin
+    username: admin
+    password: "password123"
+
+# Scheduler Configuration
+scheduler:
+  enabled: true
+  replicas: 1
+
+# DAG Sync via GitHub
+dags:
+  gitSync:
+    enabled: true
+    repo: "https://github.com/artefact-ci/Poc_rfp_omea.git"
+    branch: "main"
+    rev: "HEAD"
+    depth: 1
+    subPath: "dags"
+    period: 30s
+    credentialsSecret: "github-git-sync-secret"
+
+# Airflow Configuration
+config:
+  core:
+    load_examples: 'False'
+    dags_folder: '/opt/airflow/dags'
+  kubernetes:
+    namespace: '{{ .Release.Namespace }}'
+    worker_container_repository: 'apache/airflow'
+    worker_container_tag: '3.0.2'
+
+# Ports
+ports:
+  airflowUI: 8080
+
+# Logging Persistence
+logs:
+  persistence:
+    enabled: true
+    size: 1Gi
