@@ -3,6 +3,57 @@ airflowVersion: "3.0.2"
 defaultAirflowTag: "3.0.2"
 executor: "KubernetesExecutor"
 
+
+# Images
+images:
+  airflow:
+    repository: ~
+    tag: ~
+    # Specifying digest takes precedence over tag.
+    digest: ~
+    pullPolicy: IfNotPresent
+  # To avoid images with user code, you can turn this to 'true' and
+  # all the 'run-airflow-migrations' and 'wait-for-airflow-migrations' containers/jobs
+  # will use the images from 'defaultAirflowRepository:defaultAirflowTag' values
+  # to run and wait for DB migrations .
+  useDefaultImageForMigration: false
+  # timeout (in seconds) for airflow-migrations to complete
+  migrationsWaitTimeout: 60
+  pod_template:
+    # Note that `images.pod_template.repository` and `images.pod_template.tag` parameters
+    # can be overridden in `config.kubernetes` section. So for these parameters to have effect
+    # `config.kubernetes.worker_container_repository` and `config.kubernetes.worker_container_tag`
+    # must be not set .
+    repository: ~
+    tag: ~
+    pullPolicy: IfNotPresent
+  flower:
+    repository: ~
+    tag: ~
+    pullPolicy: IfNotPresent
+  statsd:
+    repository: quay.io/prometheus/statsd-exporter
+    tag: v0.28.0
+    pullPolicy: IfNotPresent
+  redis:
+    repository: redis
+    # Redis is limited to 7.2-bookworm due to licencing change
+    # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
+    tag: 7.2-bookworm
+    pullPolicy: IfNotPresent
+  pgbouncer:
+    repository: apache/airflow
+    tag: airflow-pgbouncer-2025.03.05-1.23.1
+    pullPolicy: IfNotPresent
+  pgbouncerExporter:
+    repository: apache/airflow
+    tag: airflow-pgbouncer-exporter-2025.03.05-0.18.0
+    pullPolicy: IfNotPresent
+  gitSync:
+    repository: registry.k8s.io/git-sync/git-sync
+    tag: v4.3.0
+    pullPolicy: IfNotPresent
+
 # Permissions for SparkKubernetesOperator
 rbac:
   create: true
@@ -18,6 +69,10 @@ postgresql:
   image:
     tag: "latest" # Use the latest PostgreSQL image
   # --- ADDED SECTION END ---
+  persistence:
+    enabled: true
+    size: 2Gi
+
 
 redis:
   enabled: true
@@ -40,6 +95,16 @@ webserver:
     username: admin
     password: "password123"
 
+apiServer:
+  replicas: 1
+  service:
+      type: NodePort
+      ports:
+        - name: api-server
+          port: 8080        # The port inside the cluster
+          targetPort: 8080  # The port the container is listening on
+          nodePort: 30906
+
 # Scheduler Configuration
 scheduler:
   enabled: true
@@ -49,7 +114,7 @@ scheduler:
 dags:
   gitSync:
     enabled: true
-    repo: "https://github.com/artefact-ci/Poc_rfp_omea.git"
+    repo: "https://github.com/artefact-ci/poc-omea-dags.git"
     branch: "main"
     rev: "HEAD"
     depth: 1
@@ -61,7 +126,7 @@ dags:
 config:
   core:
     load_examples: 'False'
-    dags_folder: '/opt/airflow/dags'
+    dags_folder: '/opt/airflow/dags/repo/dags'
   kubernetes:
     namespace: '{{ .Release.Namespace }}'
     worker_container_repository: 'apache/airflow'
