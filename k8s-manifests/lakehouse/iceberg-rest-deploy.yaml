@@ -18,7 +18,7 @@ spec:
       initContainers:
       - name: wait-for-db
         image: busybox:1.36
-        command: ['sh', '-c', 'until nc -vz catalog-db-postgresql 5432; do echo "waiting for database..."; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -vz db-postgresql 5432; do echo "waiting for database..."; sleep 2; done;']
       
       containers:
       - name: iceberg-rest
@@ -28,13 +28,13 @@ spec:
         env:
         # DB Config (Non-sensitive, kept as literals)
         - name: CATALOG_URI
-          value: "jdbc:postgresql://catalog-db-postgresql:5432/iceberg_catalog"
+          value: "jdbc:postgresql://db-postgresql:5432/iceberg_catalog"
         - name: CATALOG_JDBC_USER
           value: "iceberg"
         - name: CATALOG_JDBC_PASSWORD
           value: "iceberg_pass"
         - name: CATALOG_WAREHOUSE
-          value: "s3://warehouse/"
+          value: "s3://lakehouse/"
         - name: CATALOG_IO__IMPL
           value: "org.apache.iceberg.aws.s3.S3FileIO"
         - name: CATALOG_S3_ENDPOINT

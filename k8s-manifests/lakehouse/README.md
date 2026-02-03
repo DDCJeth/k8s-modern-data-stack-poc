@@ -15,8 +15,12 @@ helm upgrade --install minio minio/minio -f values-minio.yaml -n lakehouse --cre
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 #helm show values bitnami/postgresql > values-custom.yaml
-helm upgrade  --install catalog-db bitnami/postgresql -f values-pg.yaml -n lakehouse --create-namespace --debug --timeout 10m 
+helm upgrade  --install db bitnami/postgresql -f values-pg.yaml -n lakehouse --create-namespace --debug --timeout 10m 
+
+helm uninstall db -n lakehouse
+kubectl delete pvc data-catalog-db-postgresql-0 -n lakehouse
 ```
+
 
 ## Deploy iceberg-rest
 

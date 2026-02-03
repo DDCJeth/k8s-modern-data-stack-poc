@@ -62,7 +62,7 @@ server:
       maxMemory: "4GB"
 
 catalogs:
-  lakehouse: |
+  iceberg: |
     connector.name=iceberg
     iceberg.catalog.type=rest
     iceberg.rest-catalog.uri=http://iceberg-rest:8181
