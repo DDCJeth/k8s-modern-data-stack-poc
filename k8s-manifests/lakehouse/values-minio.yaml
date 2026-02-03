@@ -1,0 +1,42 @@
+mode: standalone  # or distributed for multi-node setup
+persistence:
+  size: 5Gi
+
+resources:
+  requests:
+    memory: 1Gi
+
+rootUser: "admin"
+rootPassword: "password"
+
+
+service:
+  type: NodePort
+  clusterIP: ~
+  port: "9000"
+  nodePort: 32000
+
+consoleService:
+  type: NodePort
+  clusterIP: ~
+  port: "9001"
+  nodePort: 32001
+
+
+users:
+  ## Username, password and policy to be assigned to the user
+  ## Default policies are [readonly|readwrite|writeonly|consoleAdmin|diagnostics]
+  ## Add new policies as explained here https://min.io/docs/minio/kubernetes/upstream/administration/identity-access-management.html#access-management
+  ## NOTE: this will fail if LDAP is enabled in your MinIO deployment
+  ## make sure to disable this if you are using LDAP.
+  - accessKey: console
+    secretKey: console123
+    policy: consoleAdmin
+
+
+buckets: 
+  - name: "datalake"
+    policy: "readwrite"
+
+  - name: "lakehouse"
+    policy: "readwrite"
