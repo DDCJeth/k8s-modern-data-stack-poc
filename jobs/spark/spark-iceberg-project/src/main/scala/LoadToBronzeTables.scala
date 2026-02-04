@@ -2,9 +2,10 @@ import org.apache.spark.sql.{SparkSession, DataFrame}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.functions._
+import org.apache.spark.internal.Logging
 import scala.io.Source
 
-object LoadToBronzeTables {
+object LoadToBronzeTables extends Logging {
 
   def main(args: Array[String]): Unit = {
     // Expected args: <inputPath> <tableName> <schemaPath> <partitionCol>
