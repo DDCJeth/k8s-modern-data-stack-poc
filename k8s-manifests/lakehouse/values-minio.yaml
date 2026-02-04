@@ -37,6 +37,10 @@ users:
 buckets: 
   - name: "datalake"
     policy: "readwrite"
+    permissions:
+      - "public"
 
   - name: "lakehouse"
     policy: "readwrite"
+    permissions:
+      - "public"

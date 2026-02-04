@@ -7,6 +7,7 @@ helm repo update
 kubectl create ns lakehouse
 helm upgrade --install minio minio/minio -f values-minio.yaml -n lakehouse --create-namespace --debug --timeout 10m
 
+helm uninstall minio -n lakehouse
 ```
 
 ## Deploy Postgresql

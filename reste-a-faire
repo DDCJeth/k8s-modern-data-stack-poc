@@ -1,10 +1,26 @@
 
 
-- Déployer la stack dans kubernetes
+- Tester les tests unitaires pour les jobs spark (SparkApplication yaml file)
+- Déployer la stack dans kubernetes | reste kafka et openmetadata
 - Automatiser la creation des images spark avec github CI/CD
 - Deployer Airflow 3 et lancer les tests de spark operator => OK
-- Tester les manifests pour le deploiement de l'architecture dans kubernetes
+- Deployer spark history server
+
+- Tester les manifests pour le deploiement de l'architecture dans kubernetes | reste kafka et openmetadata
 - Faire les jobs spark pour les traitements batch (voice => OK ; sms => en cours; data => à faire)
 - Faire une reunion avec le data viz pour avoir une idée des tables gold à créer
+
+
 - Faire les jobs spark-streaming ou kafka streams pour le traitement streaming
 - Déployer kafka et ingerer les données dans un topic
+
+
+
+
+
+docker run --rm --name sparkc -d ddcj/spark-job:omea-pocv7 sleep infinity
+docker cp bundle-2.23.19.jar sparkc:/opt/spark/jars/
+docker commit sparkc ddcj/spark-job:omea-pocv8
+docker push ddcj/spark-job:omea-pocv8
+
+docker exec -it sparkc /bin/bash
