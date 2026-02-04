@@ -1,7 +1,7 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: create-iceberg-table
+  name: populate-silver-voice-table
   namespace: default
 spec:
   # deps:
@@ -11,11 +11,12 @@ spec:
   type: Java
   mode: cluster
   image: "ddcj/spark-job:omea-pocv2"
-  mainClass: CreateIcebergTable
+  mainClass: LoadVoiceSilverTable
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
   arguments:
-    - "s3a://datalake/schemas/"
-    - "voice"
+    - "2026-02-03"
+    - "bronze.voice"
+    - "silver.voice"
 
   sparkVersion: "4.0.1"
   restartPolicy:
@@ -30,12 +31,14 @@ spec:
     "spark.sql.catalog.iceberg.s3.endpoint": "http://minio.lakehouse.svc.cluster.local:9000"
     "spark.sql.catalog.iceberg.warehouse": "s3a://lakehouse/"
     "spark.sql.catalog.iceberg.s3.region": "us-east-1"
+    "spark.sql.catalog.iceberg.s3.path-style-access": "true"
     "spark.sql.defaultCatalog": "iceberg"
 
-  hadoopConf:
-    "fs.s3a.endpoint": "http://minio.lakehouse.svc.cluster.local:9000"
-    "fs.s3a.path.style.access": "true"
-    "fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.endpoint": "http://minio.lakehouse.svc.cluster.local:9000"
+    "spark.hadoop.fs.s3a.path.style.access": "true"
+    "spark.hadoop.fs.s3a.access.key": "admin"
+    "spark.hadoop.fs.s3a.secret.key": "password"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
 
   driver:
     cores: 1
@@ -84,9 +87,3 @@ spec:
           secretKeyRef:
             name: minio-creds
             key: AWS_REGION 
-
-#  dependencies: # Alternative way to add dependencies
-#   deps:
-#       packages:
-#         - "org.apache.hadoop:hadoop-aws:3.4.1" # Match your Spark's Hadoop version
-# #        - "com.amazonaws:aws-java-sdk-bundle:1.12.262"
