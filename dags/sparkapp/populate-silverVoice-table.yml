@@ -10,11 +10,11 @@ spec:
 
   type: Java
   mode: cluster
-  image: "ddcj/spark-job:omea-pocv8"
+  image: "ddcj/spark-job:omea-pocv10"
   mainClass: LoadVoiceSilverTable
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
   arguments:
-    - "2026-02-03"
+    - "2026-02-04"
     - "bronze.voice"
     - "silver.voice"
 
@@ -33,6 +33,13 @@ spec:
     "spark.sql.catalog.iceberg.s3.region": "us-east-1"
     "spark.sql.catalog.iceberg.s3.path-style-access": "true"
     "spark.sql.defaultCatalog": "iceberg"
+
+    # Adding MinIO credentials directly for Iceberg REST catalog access
+    "spark.sql.catalog.iceberg.s3.access-key-id": "admin"
+    "spark.sql.catalog.iceberg.s3.secret-access-key": "password"
+    
+    # Also, ensure the signer is compatible with MinIO (which usually uses V4)
+    "spark.sql.catalog.iceberg.s3.signer-type": "standard"
 
     "spark.hadoop.fs.s3a.endpoint": "http://minio.lakehouse.svc.cluster.local:9000"
     "spark.hadoop.fs.s3a.path.style.access": "true"
