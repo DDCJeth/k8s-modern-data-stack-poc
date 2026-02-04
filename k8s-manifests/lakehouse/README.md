@@ -18,7 +18,7 @@ helm repo update
 helm upgrade  --install db bitnami/postgresql -f values-pg.yaml -n lakehouse --create-namespace --debug --timeout 10m 
 
 helm uninstall db -n lakehouse
-kubectl delete pvc data-catalog-db-postgresql-0 -n lakehouse
+kubectl delete pvc data-db-postgresql-0 -n lakehouse
 ```
 
 
