@@ -6,7 +6,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ./cdr_data:/app/cdr_data
+      - /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/cdr_generator/scripts/cdr_data:/app/cdr_data
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
@@ -24,8 +24,32 @@ services:
     environment:
       NIFI_WEB_HTTPS_PORT: 8443
     volumes:
-      - ./cdr_data:/opt/nifi/nifi-data/cdr_data
+      - /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/cdr_generator/scripts/cdr_data:/opt/nifi/nifi-data/cdr_data
 
 
 ## docker logs nifi | grep Generated
-##
+## e129c21f-9447-4503-846a-cc74474c58b7 / zAjESsazsioCcdiDajPcFUbsB/oonday
+
+
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: broker
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk

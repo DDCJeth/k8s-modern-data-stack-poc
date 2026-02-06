@@ -7,3 +7,5 @@ jobs/spark/spark-iceberg-project/project/project/
 jobs/spark/spark-iceberg-project/project/target/
 jobs/spark/spark-iceberg-project/target
 .env
+k8s-manifests/trino/trinoDB.zip
+k8s-manifests/kafka/strimzi-kafka-operator/
