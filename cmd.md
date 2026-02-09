@@ -1,6 +1,25 @@
 
+# SPARK STREAMING
 
-# SPARK LAUNCH
+```bash
+./spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1
+
+```
+
+
+# KAFKA DOCKER
+
+```bash
+docker exec -it broker bash
+cd /opt/kafka/bin
+
+./kafka-console-producer.sh --bootstrap-server localhost:9092 --topic cdr-test
+
+./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic cdr-test --from-beginning
+```
+
+
+# SPARK BACTH LAUNCH
 ```bash
 
 

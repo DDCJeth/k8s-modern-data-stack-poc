@@ -28,7 +28,8 @@ services:
 
 
 ## docker logs nifi | grep Generated
-## e129c21f-9447-4503-846a-cc74474c58b7 / zAjESsazsioCcdiDajPcFUbsB/oonday
+## cf64ca55-213a-4f34-9151-d32882876ee4
+## 65mFMOpSH9wHJKxxfe1v69Cs9MM3Mjjq
 
 
   broker:
