@@ -3,7 +3,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.streaming.OutputMode
 
-object KafkaMultiKpiProducer {
+object VoiceGoldStream {
   def main(args: Array[String]): Unit = {
 
     // 1. Initialize Spark
@@ -37,7 +37,7 @@ object KafkaMultiKpiProducer {
     val rawKafkaDf = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("subscribe", "voice_cdr_topic")
+      .option("subscribe", "voice-silver-cdr") // Input topic for Silver layer
       .option("startingOffsets", "latest")
       .load()
 
@@ -71,7 +71,7 @@ object KafkaMultiKpiProducer {
       .queryName("DailyKPIs")
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("topic", "gold-voice-cdr") // Topic 1
+      .option("topic", "voice-gold-cdr") // Topic 1
       .option("checkpointLocation", "/tmp/checkpoints/daily-kpis")
       .outputMode(OutputMode.Update())
       .start()
@@ -99,7 +99,7 @@ object KafkaMultiKpiProducer {
       .queryName("TowerKPIs")
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("topic", "gold-voice-tower-cdr") // Topic 2
+      .option("topic", "voice-gold-tower-cdr") // Topic 2
       .option("checkpointLocation", "/tmp/checkpoints/tower-kpis")
       .outputMode(OutputMode.Update())
       .start()

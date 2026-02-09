@@ -9,3 +9,6 @@ jobs/spark/spark-iceberg-project/target
 .env
 k8s-manifests/trino/trinoDB.zip
 k8s-manifests/kafka/strimzi-kafka-operator/
+jobs/spark/spark-kafka-streaming/project/project/
+jobs/spark/spark-kafka-streaming/project/target/
+jobs/spark/spark-kafka-streaming/target
