@@ -4,6 +4,40 @@
 ```bash
 ./spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1
 
+
+## VOICE STREAMING JOBS
+./spark-submit \
+  --class VoiceSilverStream \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+   /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
+
+./spark-submit \
+  --class VoiceGoldStream \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+   /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
+
+## SMS STREAMING JOBS
+./spark-submit \
+  --class SmsSilverStream \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
+
+./spark-submit \
+  --class SmsGoldStream \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar 
+
+
+## DATA STREAMING JOBS
+./spark-submit \
+  --class DataSilverStream \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
+
+./spark-submit \
+  --class DataGoldStream \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
 ```
 
 

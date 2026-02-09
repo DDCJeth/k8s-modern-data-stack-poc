@@ -9,7 +9,6 @@ object VoiceGoldStream {
     // 1. Initialize Spark
     val spark = SparkSession.builder()
       .appName("KafkaVoiceMultiKPIs")
-      .master("local[*]")
       .getOrCreate()
 
     import spark.implicits._

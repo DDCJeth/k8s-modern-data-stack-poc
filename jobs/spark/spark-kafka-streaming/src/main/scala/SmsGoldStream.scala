@@ -9,15 +9,9 @@ object SmsGoldStream {
     // 1. Initialize Spark
     val spark = SparkSession.builder()
       .appName("KafkaSmsMultiKPIs")
-      .master("local[*]")
       .getOrCreate()
 
     import spark.implicits._
-
-{"timestamp":"2024-12-14T13:00:37","sms_id":"SMS_000005","sms_date":"2024-12-14","sms_hour":13,
-"sender_msisdn":22379788019,"receiver_msisdn":22372095688,"sms_type":"MO","message_length":83,
-"cell_id":"CELL_SIK_001","region":"Sikasso","delivery_status":"DELIVERED","charging_amount":25.0,
-"filename":"sms_cdr_mali_06.csv","ingest_ts":"1770651369581"}
 
     // 2. Define Schema
     val cdrSchema = new StructType()

@@ -9,7 +9,6 @@ object DataGoldStream {
     // 1. Initialize Spark
     val spark = SparkSession.builder()
       .appName("KafkaVoiceMultiKPIs")
-      .master("local[*]")
       .getOrCreate()
 
     import spark.implicits._
@@ -117,7 +116,7 @@ object DataGoldStream {
     )
     .withColumn("total_data_volume_GB", col("total_bytes") / math.pow(1024, 3))
 
-    
+
     // Prepare Output 2
     // For the Kafka key, we concatenate columns to make a unique ID (e.g. "2024-12-14_11_CELL_01")
     val queryTower = dataTowerKpis

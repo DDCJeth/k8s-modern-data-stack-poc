@@ -92,8 +92,8 @@ object VoiceSilverStream {
       .writeStream
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092") // Replace with your Kafka Broker
-      .option("topic", "silver-voice-cdr") // Output topic
-      .option("checkpointLocation", "/tmp/checkpoints/silver-voice-data") // Required for fault tolerance
+      .option("topic", "voice-silver-cdr") // Output topic
+      .option("checkpointLocation", "/tmp/checkpoints/voice-silver-cdr") // Required for fault tolerance
       .outputMode("append")
       .start()
 
