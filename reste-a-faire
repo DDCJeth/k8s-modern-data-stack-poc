@@ -1,14 +1,17 @@
+10/02
+- Envoyer l'image Kafka avec les données à Michel
+- Deployer les jobs spark streaming dans kubernetes
+- Deployer spak history server
 
 09/02
 - Faire les jobs spark-streaming ou kafka streams pour le traitement streaming
 - Déployer openmetadata dans kubernetes
 - Deployer spark history server
 
-05-06/02 => Fait par Michel
-- Tester l'import-export des dashboard Trino
-- Deployer Superset et connecter à trino
-- Faire un 1er draft des dashboard
-- Determiner les Tables à completer pour le dashboard
+10/02 => Fait par Michel
+- Connecter Trino à Kafka
+- Faire les dashboards Temps réel avec Superset et Trino connecté aux topics Kafka 
+- Determiner les Tables à completer pour le dashboard temps réel
 
 
 
