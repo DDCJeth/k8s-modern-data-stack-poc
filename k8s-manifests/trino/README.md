@@ -5,19 +5,28 @@
 helm repo add trino https://trinodb.github.io/charts
 helm repo update
 #helm show values trino/trino > values-custom.yaml
-helm upgrade --install trino trino/trino -f values-trino.yaml -n lakehouse --create-namespace --debug --timeout 10m
+helm upgrade --install trino trino/trino -f values-trino.yaml -n trino --create-namespace --debug --timeout 10m
 
 helm uninstall trino
 ```
 
 ## Test
 ```bash
-kubectl -n lakehouse exec -it trino-coordinator-54cd54c5d4-sqwnx -- trino
+```bash
+kubectl -n trino get po -o name | grep coordinator
+kubectl -n trino exec -it $(kubectl -n trino get po -o name | grep coordinator) -- trino
+
+SELECT _message FROM kakfa
 ```
 
 ```sql
 
+
 SHOW CATALOGS;
+
+
+SELECT _message FROM kakfa.default."voice-bronze-cdr" LIMIT 10;
+
 
 CREATE SCHEMA IF NOT EXISTS iceberg.db;
 
