@@ -1,0 +1,129 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-headless
+  namespace: nifi
+spec:
+  clusterIP: None
+  selector:
+    app: zookeeper
+  ports:
+    - name: client
+      port: 2181
+      targetPort: 2181
+    - name: server
+      port: 2888
+      targetPort: 2888
+    - name: leader-election
+      port: 3888
+      targetPort: 3888
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+  namespace: nifi
+spec:
+  selector:
+    app: zookeeper
+  type: ClusterIP
+  ports:
+    - name: client
+      port: 2181
+      targetPort: 2181
+    - name: server
+      port: 2888
+      targetPort: 2888
+    - name: leader-election
+      port: 3888
+      targetPort: 3888
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: nifi
+spec:
+  serviceName: zookeeper-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      initContainers:
+      - name: setup-zookeeper
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          cat > /scripts/start.sh <<'EOF'
+          #!/bin/sh
+          HOSTNAME=$(hostname)
+          ORDINAL=${HOSTNAME##*-}
+          export ZOO_MY_ID=$((ORDINAL + 1))
+          exec /docker-entrypoint.sh zkServer.sh start-foreground
+          EOF
+          chmod +x /scripts/start.sh
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      containers:
+      - name: zookeeper
+        image: zookeeper:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/scripts/start.sh"]
+        ports:
+        - name: client
+          containerPort: 2181
+        - name: server
+          containerPort: 2888
+        - name: leader-election
+          containerPort: 3888
+        env:
+        - name: ZOO_SERVERS
+          value: "server.1=zookeeper-0.zookeeper-headless.nifi.svc.cluster.local:2888:3888;2181 server.2=zookeeper-1.zookeeper-headless.nifi.svc.cluster.local:2888:3888;2181 server.3=zookeeper-2.zookeeper-headless.nifi.svc.cluster.local:2888:3888;2181"
+        - name: ZOO_CFG_EXTRA
+          value: "standaloneEnabled=false"
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        - name: datadir
+          mountPath: /var/lib/zookeeper
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 2181
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 2181
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: scripts
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
