@@ -18,9 +18,6 @@ helm install strimzi-kafka-operator strimzi/strimzi-kafka-operator \
   --create-namespace \
   --set watchAnyNamespace=true
 
-
-kubectl apply -f kafka-metrics-configmap.yaml
-
 kubectl apply -f kafka-cluster.yaml
 
 
