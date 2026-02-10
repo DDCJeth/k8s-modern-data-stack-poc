@@ -6,6 +6,7 @@ helm repo add spark-operator https://kubeflow.github.io/spark-operator
 
 # Check if repo has been added successfuly
 helm repo list
+helm repo update
 
 # Install spark-operator helm chart in spark namespace
 # helm install my-release spark-operator/spark-operator --namespace spark-operator --set "spark.jobNamespaces={test-ns}"
@@ -18,6 +19,9 @@ helm upgrade --install spark-operator spark-operator/spark-operator \
 
 # Check status of the helm chart installation
 helm status --namespace spark spark-operator
+
+# Delete application
+helm delete spark-operator -n spark
 
 # Check deployment
 kubectl get all -n spark
@@ -38,6 +42,12 @@ kubectl get sparkapplication spark-pi -o=yaml
 kubectl describe sparkapplication spark-pi
 ```
 
+
+## Explaination
+
+```bash
+kubectl explain sparkapplication.spec
+```
 
 ## Links
 https://www.kubeflow.org/docs/components/spark-operator/getting-started/
