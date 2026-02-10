@@ -1,20 +1,20 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: voice-silver-populate-topic
+  name: data-silver-populate-topic
   namespace: default
 spec:
 
   type: Java
   mode: cluster
   image: "ddcj/spark-kafka:omea-pocv1"
-  mainClass: VoiceSilverStream
+  mainClass: DataSilverStream
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
   arguments:
     - "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
-    - "voice-bronze-cdr"
-    - "voice-silver-cdr"
-    - "/tmp/checkpoints/voice-silver-cdr"
+    - "data-bronze-cdr"
+    - "data-silver-cdr"
+    - "/tmp/checkpoints/data-silver-cdr"
       
   sparkVersion: "4.0.1"  
   deps:

@@ -1,21 +1,31 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: voice-gold-populate-topics
+  name: voice-gold-populate-topic
   namespace: default
 spec:
 
   type: Java
   mode: cluster
-  image: "ddcj/spark-job:omea-pocv10"
+  image: "ddcj/spark-kafka:omea-pocv1"
   mainClass: VoiceGoldStream
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
+  arguments:
+    - "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+    - "voice-silver-cdr"
+    - "voice-gold-cdr"
+    - "/tmp/checkpoints/voice-gold-cdr"
+      
+  sparkVersion: "4.0.1"  
+  deps:
+    packages:
+      - "org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1"
 
-  sparkVersion: "4.0.1"
   restartPolicy:
     type: Never
 
   sparkConf:
+    "spark.jars.ivy": "/tmp/.ivy"
     "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
     "spark.sql.catalog.iceberg": "org.apache.iceberg.spark.SparkCatalog"
     "spark.sql.catalog.iceberg.type": "rest"
