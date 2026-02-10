@@ -1,3 +1,8 @@
+# K8S cluster
+
+```bash
+minikube start --cpus=4 --memory=8192
+```
 
 # SPARK STREAMING
 

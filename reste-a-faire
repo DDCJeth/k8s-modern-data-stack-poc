@@ -1,13 +1,13 @@
-10/02
-- Deployer les jobs spark streaming dans kubernetes
-- Deployer spark history server
+
 
 11/02
+- Augmenter les ressources du minikube
 - Déployer openmetadata dans kubernetes
-- Déployer kafka dans k8s
+- Deployer spark history server
+- Déployer superset
+- Adapter les job streaming pour écire les snapshots dans Minio
 
 10/02 => Fait par Michel
-- Connecter Trino à Kafka
 - Faire les dashboards Temps réel avec Superset et Trino connecté aux topics Kafka 
 - Determiner les Tables à completer pour le dashboard temps réel
 
