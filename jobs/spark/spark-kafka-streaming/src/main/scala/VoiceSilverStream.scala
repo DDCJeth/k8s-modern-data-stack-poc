@@ -5,6 +5,22 @@ import org.apache.spark.sql.types._
 object VoiceSilverStream {
   def main(args: Array[String]): Unit = {
 
+    // Expected args: <kafkaHost> <bronzeTopic> <silverTopic> <checkpointLocation> 
+    // Expected args: 1. kafkaHost (e.g. localhost:9092)
+    //                2. bronzeTopic (e.g. voice-bronze-cdr) 
+    //                3. silverTopic (e.g. voice-silver-cdr) )
+    //                4. checkpointLocation (e.g. /tmp/checkpoints/voice-silver-cdr or s3a://datalake/checkpoints/voice-silver-cdr)
+
+    if (args.length < 4) {
+      println("Usage: PopulateSilverTables <kafkaHost> <bronzeTopic> <silverTopic> <checkpointLocation>")    
+      sys.exit(1)
+    }
+
+    val kafkaHost      = args(0) // e.g. localhost:9092
+    val bronzeTopic    = args(1) // e.g. voice-bronze-cdr
+    val silverTopic      = args(2) // e.g. voice-silver-cdr
+    val checkpointLocation  = args(3) // e.g. /tmp/checkpoints/voice-silver-cdr or s3a://datalake/checkpoints/voice-silver-cdr
+
     val spark = SparkSession.builder()
       .appName("KafkaVoiceTransformation")
       .getOrCreate()
@@ -29,8 +45,8 @@ object VoiceSilverStream {
     // 2. Read from Kafka
     val kafkaRawDf = spark.readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("subscribe", "voice-bronze-cdr") // Input topic for Voice Bronze layer
+      .option("kafka.bootstrap.servers", kafkaHost) // e.g. localhost:9092
+      .option("subscribe", bronzeTopic) // Input topic for Voice Bronze layer
       .load()
 
     // 3. Parse JSON and Flatten
@@ -91,9 +107,9 @@ object VoiceSilverStream {
       .selectExpr("to_json(struct(*)) AS value")
       .writeStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092") // Replace with your Kafka Broker
-      .option("topic", "voice-silver-cdr") // Output topic
-      .option("checkpointLocation", "/tmp/checkpoints/voice-silver-cdr") // Required for fault tolerance
+      .option("kafka.bootstrap.servers", kafkaHost) // Replace with your Kafka Broker
+      .option("topic", silverTopic) // Output topic
+      .option("checkpointLocation", checkpointLocation) // Required for fault tolerance
       .outputMode("append")
       .start()
 

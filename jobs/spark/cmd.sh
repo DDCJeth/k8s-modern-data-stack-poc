@@ -1,41 +1,60 @@
 
 
-### STREAMING JOBS
-```bash
-
 ## VOICE STREAMING JOBS
 ./spark-submit \
-  --class VoiceSilverStream \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
-   /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
+    --class VoiceSilverStream \
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+    /home/jeth/Projects/spark-dev-repo/streaming-kafka/target/scala-2.13/app.jar \
+    "localhost:9092" \
+    "voice-bronze-cdr" \
+    "voice-silver-cdr" \
+    "/tmp/checkpoints/voice-silver-cdr"
 
 ./spark-submit \
-  --class VoiceGoldStream \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
-   /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
+    --class VoiceGoldStream \
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+    /home/jeth/Projects/spark-dev-repo/streaming-kafka/target/scala-2.13/app.jar \
+    "localhost:9092" \
+    "voice-silver-cdr" \
+    "voice-gold-cdr" \
+    "/tmp/checkpoints/voice-gold-cdr"
 
-## SMS STREAMING JOBS
-./spark-submit \
-  --class SmsSilverStream \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
-   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
-
-./spark-submit \
-  --class SmsGoldStream \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
-   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar 
-
-
-## DATA STREAMING JOBS
-./spark-submit \
-  --class DataSilverStream \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
-   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
 
 ./spark-submit \
-  --class DataGoldStream \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
-   /home/jeth/Projects/OMEA/POC_rfp_omea/jobs/spark/spark-kafka-streaming/target/scala-2.13/app.jar
+    --class SmsSilverStream \
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+    /home/jeth/Projects/spark-dev-repo/streaming-kafka/target/scala-2.13/app.jar \
+    "localhost:9092" \
+    "sms-bronze-cdr" \
+    "sms-silver-cdr" \
+    "/tmp/checkpoints/sms-silver-cdr"
+
+./spark-submit \
+    --class SmsGoldStream \
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+    /home/jeth/Projects/spark-dev-repo/streaming-kafka/target/scala-2.13/app.jar \
+    "localhost:9092" \
+    "sms-silver-cdr" \
+    "sms-gold-cdr" \
+    "/tmp/checkpoints/sms-gold-cdr"
+
+./spark-submit \
+    --class DataSilverStream \
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+    /home/jeth/Projects/spark-dev-repo/streaming-kafka/target/scala-2.13/app.jar \
+    "localhost:9092" \
+    "data-bronze-cdr" \
+    "data-silver-cdr" \
+    "/tmp/checkpoints/data-silver-cdr"
+
+./spark-submit \
+    --class DataGoldStream \
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1 \
+    /home/jeth/Projects/spark-dev-repo/streaming-kafka/target/scala-2.13/app.jar \
+    "localhost:9092" \
+    "data-silver-cdr" \
+    "data-gold-cdr" \
+    "/tmp/checkpoints/data-gold-cdr"
 
 
 

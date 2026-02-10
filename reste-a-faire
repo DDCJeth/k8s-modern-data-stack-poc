@@ -1,12 +1,10 @@
 10/02
-- Envoyer l'image Kafka avec les données à Michel
 - Deployer les jobs spark streaming dans kubernetes
-- Deployer spak history server
-
-09/02
-- Faire les jobs spark-streaming ou kafka streams pour le traitement streaming
-- Déployer openmetadata dans kubernetes
 - Deployer spark history server
+
+11/02
+- Déployer openmetadata dans kubernetes
+- Déployer kafka dans k8s
 
 10/02 => Fait par Michel
 - Connecter Trino à Kafka
