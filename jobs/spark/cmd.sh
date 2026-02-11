@@ -118,4 +118,12 @@ spark-submit \
   --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
   load_to_iceberg.jar
 
+
+
+  --conf spark.eventLog.enabled=true \
+  --conf spark.eventLog.dir=s3a://spark-logs/ \
+  --conf spark.hadoop.fs.s3a.endpoint=http://minio-service.default.svc.cluster.local:9000 \
+  --conf spark.hadoop.fs.s3a.path.style.access=true \
+  --conf spark.hadoop.fs.s3a.access.key=YOUR_ACCESS_KEY \
+  --conf spark.hadoop.fs.s3a.secret.key=YOUR_SECRET_KEY
 ```

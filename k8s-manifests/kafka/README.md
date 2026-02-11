@@ -8,8 +8,7 @@
 helm repo add strimzi https://strimzi.io/charts/
 
 helm repo update 
-
-helm show values strimzi/strimzi-kafka-operator > values-strimzi.yaml
+#helm show values strimzi/strimzi-kafka-operator > values-strimzi.yaml
 
 
 # Install the operator

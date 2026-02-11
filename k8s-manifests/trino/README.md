@@ -12,11 +12,12 @@ helm uninstall trino
 
 ## Test
 ```bash
-```bash
 kubectl -n trino get po -o name | grep coordinator
 kubectl -n trino exec -it $(kubectl -n trino get po -o name | grep coordinator) -- trino
 
-SELECT _message FROM kakfa
+# # 1. Get the application URL by running these commands:
+# export POD_NAME=$(kubectl get pods --namespace data-gov -l "app.kubernetes.io/name=openmetadata,app.kubernetes.io/instance=openmetadata" -o jsonpath="{.items[0].metadata.name}")
+# export CONTAINER_PORT=$(kubectl get pod --namespace data-gov $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
 ```
 
 ```sql
@@ -24,6 +25,7 @@ SELECT _message FROM kakfa
 
 SHOW CATALOGS;
 
+SHOW TABLES FROM kafka.default;
 
 SELECT _message FROM kakfa.default."voice-bronze-cdr" LIMIT 10;
 

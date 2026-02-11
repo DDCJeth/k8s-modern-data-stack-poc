@@ -4,8 +4,10 @@
 ### Nifi
 
 ```bash
+kubectl create ns nifi
 kubectl apply -f nifi-deployment.yaml
-
+# admin
+# password12345678
 ```
 
 

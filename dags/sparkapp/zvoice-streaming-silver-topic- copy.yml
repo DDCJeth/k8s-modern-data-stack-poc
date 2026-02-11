@@ -1,20 +1,20 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: sms-gold-populate-topic
+  name: voice-silver-populate-topic
   namespace: default
 spec:
 
   type: Java
   mode: cluster
-  image: "ddcj/spark-kafka:omea-pocv2"
-  mainClass: SmsGoldStream
+  image: "ddcj/spark-kafka:omea-pocv1"
+  mainClass: VoiceSilverStream
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
   arguments:
     - "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
-    - "sms-silver-cdr"
-    - "sms-gold-cdr"
-    - "/tmp/checkpoints/sms-gold-cdr"
+    - "voice-bronze-cdr"
+    - "voice-silver-cdr"
+    - "/tmp/checkpoints/voice-silver-cdr"
       
   sparkVersion: "4.0.1"  
   deps:
@@ -26,9 +26,23 @@ spec:
 
   sparkConf:
     "spark.jars.ivy": "/tmp/.ivy"
+    "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    "spark.sql.catalog.iceberg": "org.apache.iceberg.spark.SparkCatalog"
+    "spark.sql.catalog.iceberg.type": "rest"
+    "spark.sql.catalog.iceberg.uri": "http://iceberg-rest.lakehouse.svc.cluster.local:8181"
+    "spark.sql.catalog.iceberg.io-impl": "org.apache.iceberg.aws.s3.S3FileIO"
+    "spark.sql.catalog.iceberg.s3.endpoint": "http://minio.lakehouse.svc.cluster.local:9000"
+    "spark.sql.catalog.iceberg.warehouse": "s3://lakehouse/"
+    "spark.sql.catalog.iceberg.s3.region": "us-east-1"
+    "spark.sql.catalog.iceberg.s3.path-style-access": "true"
+    "spark.sql.defaultCatalog": "iceberg"
+
+    # Adding MinIO credentials directly for Iceberg REST catalog access
+    "spark.sql.catalog.iceberg.s3.access-key-id": "admin"
+    "spark.sql.catalog.iceberg.s3.secret-access-key": "password"
     
-    "spark.eventLog.enabled": "true"
-    "spark.eventLog.dir": "s3a://spark-logs/"
+    # Also, ensure the signer is compatible with MinIO (which usually uses V4)
+    "spark.sql.catalog.iceberg.s3.signer-type": "standard"
 
     "spark.hadoop.fs.s3a.endpoint": "http://minio.lakehouse.svc.cluster.local:9000"
     "spark.hadoop.fs.s3a.path.style.access": "true"
