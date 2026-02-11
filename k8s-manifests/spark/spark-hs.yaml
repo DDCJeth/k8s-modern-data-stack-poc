@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-history-server
+  namespace: spark-hs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-history-server
+  template:
+    metadata:
+      labels:
+        app: spark-history-server
+    spec:
+      containers:
+      - name: spark-history-server
+        # Important: The image must include the hadoop-aws and aws-sdk-bundle jars
+        image: ddcj/spark-hs:4.0.1 
+        args: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.history.HistoryServer"]
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: minio-spark-credentials
+              key: access-key
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-spark-credentials
+              key: secret-key
+        - name: SPARK_HISTORY_OPTS
+          value: >-
+            -Dspark.history.fs.logDirectory=s3a://spark-logs/
+            -Dspark.hadoop.fs.s3a.endpoint=http://minio.lakehouse.svc.cluster.local:9000
+            -Dspark.hadoop.fs.s3a.path.style.access=true
+            -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem
+            -Dspark.hadoop.fs.s3a.connection.ssl.enabled=false
+        ports:
+        - containerPort: 18080
+          name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-history-server-svc
+  namespace: spark-hs
+spec:
+  ports:
+  - port: 18080
+    targetPort: 18080
+  selector:
+    app: spark-history-server
