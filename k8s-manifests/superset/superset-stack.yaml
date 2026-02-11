@@ -1,0 +1,173 @@
+# ===========================
+# 1. REDIS
+# ===========================
+apiVersion: v1
+kind: Service
+metadata:
+  # FIX: Renamed to avoid 'REDIS_PORT' env var collision
+  name: superset-redis 
+  labels:
+    app: redis
+spec:
+  ports:
+    - port: 6379
+      name: redis
+  selector:
+    app: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: bitnamilegacy/redis:7.0.11
+          env:
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+            # FIX: Explicitly set the port to prevent K8s variable leakage
+            - name: REDIS_PORT
+              value: "6379" 
+          ports:
+            - containerPort: 6379
+
+---
+# ===========================
+# 2. POSTGRESQL
+# ===========================
+apiVersion: v1
+kind: Service
+metadata:
+  # FIX: Renamed to avoid 'POSTGRESQL_PORT' collision
+  name: superset-postgres
+  labels:
+    app: postgresql
+spec:
+  ports:
+    - port: 5432
+      name: postgresql
+  selector:
+    app: postgresql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: bitnamilegacy/postgresql:14.17.0-debian-12-r3
+          env:
+            - name: POSTGRESQL_USERNAME
+              value: "superset"
+            - name: POSTGRESQL_PASSWORD
+              value: "superset"
+            - name: POSTGRESQL_DATABASE
+              value: "superset"
+            # FIX: Explicitly set the port
+            - name: POSTGRESQL_PORT
+              value: "5432"
+          ports:
+            - containerPort: 5432
+
+---
+# ===========================
+# 3. SUPERSET
+# ===========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset
+spec:
+  type: NodePort
+  ports:
+    - port: 8088
+      targetPort: 8088
+  selector:
+    app: superset
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superset
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: superset
+  template:
+    metadata:
+      labels:
+        app: superset
+    spec:
+      containers:
+        - name: superset
+          image: apache/superset:4.0.2
+          ports:
+            - containerPort: 8088
+          
+          # ---------------------------------------------------------
+          # THE FIX IS HERE:
+          # We run 'unset' to delete the conflicting K8s variables
+          # before the app starts.
+          # ---------------------------------------------------------
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Cleaning up K8s environment variables..."
+              unset REDIS_PORT
+              unset POSTGRESQL_PORT
+              
+              echo "Installing drivers..."
+              pip install psycopg2-binary redis && \
+              
+              echo "Initializing DB..."
+              superset db upgrade && \
+              superset init && \
+              
+              echo "Creating Admin..."
+              superset fab create-admin \
+                --username admin \
+                --firstname Superset \
+                --lastname Admin \
+                --email admin@superset.com \
+                --password admin || true && \
+                
+              echo "Starting Server..."
+              /usr/bin/run-server.sh
+          
+          env:
+            - name: SUPERSET_SECRET_KEY
+              value: "Ll58/MnJNrwd0QTxpgO/V3k6gcriGUk2p2emaGhk1AvWpBS6V3Q1b48U"
+            - name: SQLALCHEMY_DATABASE_URI
+              # Make sure 'postgresql' matches your Service name below
+              value: "postgresql+psycopg2://superset:superset@postgresql:5432/superset"
+            - name: REDIS_HOST
+              # Make sure 'redis' matches your Service name below
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+
+
+
+
+

@@ -1,0 +1,20 @@
+services:
+
+ superset:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: superset
+    ports:
+      - 8088:8088
+    environment:
+      - SUPERSET_SECRET_KEY=supersecretkey123
+      - TALISMAN_ENABLED=false
+      - SUPERSET_ADMIN_USERNAME=admin
+      - SUPERSET_ADMIN_PASSWORD=admin
+      - SUPERSET_ADMIN_EMAIL=admin@example.com
+#     volumes:
+#       - superset_data:/app/superset_home
+
+
+# volumes:

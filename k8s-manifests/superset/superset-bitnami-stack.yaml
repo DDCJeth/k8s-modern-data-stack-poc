@@ -1,0 +1,174 @@
+# ==========================================
+# 1. REDIS (Cache & Celery Backend)
+# ==========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset-redis  # Renamed to avoid env var collisions
+  labels:
+    app: redis
+spec:
+  ports:
+    - port: 6379
+      name: redis
+  selector:
+    app: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: bitnamilegacy/redis:8.2.0-debian-12-r0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+          ports:
+            - containerPort: 6379
+
+---
+# ==========================================
+# 2. POSTGRESQL (Metadata Database)
+# ==========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset-postgres # Renamed to avoid env var collisions
+  labels:
+    app: postgresql
+spec:
+  ports:
+    - port: 5432
+      name: postgresql
+  selector:
+    app: postgresql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: bitnamilegacy/postgresql:17.6.0-debian-12-r4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRESQL_USERNAME
+              value: "superset"
+            - name: POSTGRESQL_PASSWORD
+              value: "superset_password"
+            - name: POSTGRESQL_DATABASE
+              value: "superset"
+          ports:
+            - containerPort: 5432
+
+---
+# ==========================================
+# 3. SUPERSET (Application)
+# ==========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset
+  labels:
+    app: superset
+spec:
+  type: LoadBalancer # Use ClusterIP or NodePort if not on a cloud provider
+  ports:
+    - port: 8088
+      targetPort: 8088
+      name: http
+  selector:
+    app: superset
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superset
+  labels:
+    app: superset
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: superset
+  template:
+    metadata:
+      labels:
+        app: superset
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: bitnamilegacy/postgresql:17.6.0-debian-12-r4
+          command: ['/bin/bash', '-c', 'until pg_isready -h superset-postgres -p 5432 -U superset; do echo waiting for postgres; sleep 2; done;']
+          env:
+            - name: PGPASSWORD
+              value: "superset_password"
+      containers:
+        - name: superset
+          image: bitnamilegacy/superset:5.0.0-debian-12-r70
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8088
+          env:
+            # --- Database Configuration ---
+            - name: SUPERSET_DATABASE_HOST
+              value: "superset-postgres"
+            - name: SUPERSET_DATABASE_PORT_NUMBER
+              value: "5432"
+            - name: SUPERSET_DATABASE_USER
+              value: "superset"
+            - name: SUPERSET_DATABASE_PASSWORD
+              value: "superset_password"
+            - name: SUPERSET_DATABASE_NAME
+              value: "superset"
+
+            # --- Redis Configuration ---
+            - name: SUPERSET_REDIS_HOST
+              value: "superset-redis"
+            - name: SUPERSET_REDIS_PORT_NUMBER
+              value: "6379"
+
+            # --- Admin User ---
+            - name: SUPERSET_USERNAME
+              value: "admin"
+            - name: SUPERSET_PASSWORD
+              value: "admin"
+            - name: SUPERSET_EMAIL
+              value: "admin@superset.com"
+            
+            # --- General Config ---
+            - name: SUPERSET_SECRET_KEY
+              value: "change_me_to_a_secure_random_string"
+            - name: SUPERSET_LOAD_EXAMPLES
+              value: "yes"
+
+            # ---------------------------------------------------
+            # REMOVED: SUPERSET_PORT_NUMBER
+            # Removing this line fixes the "!1: unbound variable" error
+            # ---------------------------------------------------

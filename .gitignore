@@ -14,3 +14,4 @@ jobs/spark/spark-kafka-streaming/project/target/
 jobs/spark/spark-kafka-streaming/target
 
 k8s-manifests/nifi/apache-nifi-helm-main
+k8s-manifests/superset/superset

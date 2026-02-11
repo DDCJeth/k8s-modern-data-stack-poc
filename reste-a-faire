@@ -1,11 +1,11 @@
 
 
 11/02
-- Augmenter les ressources du minikube
+
 - Déployer openmetadata dans kubernetes
 - Deployer spark history server
-- Déployer superset
 - Adapter les job streaming pour écire les snapshots dans Minio
+- Déployer superset
 
 10/02 => Fait par Michel
 - Faire les dashboards Temps réel avec Superset et Trino connecté aux topics Kafka 

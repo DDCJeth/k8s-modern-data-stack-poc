@@ -1,0 +1,110 @@
+---
+# ===========================
+# Redis Deployment
+# ===========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          # Combining the repository and tag you provided
+          image: bitnamilegacy/redis:8.2.0-debian-12-r0
+          imagePullPolicy: IfNotPresent
+          env:
+            # Bitnami images require specific env vars to allow no password
+            # Change this to 'no' and set REDIS_PASSWORD if you want security
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+          ports:
+            - containerPort: 6379
+              name: redis
+
+---
+# ===========================
+# Redis Service
+# ===========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app: redis
+
+---
+# ===========================
+# PostgreSQL Deployment
+# ===========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          # Combining the repository and tag you provided
+          image: bitnamilegacy/postgresql:17.6.0-debian-12-r4
+          imagePullPolicy: IfNotPresent
+          env:
+            # Bitnami specific Environment Variables
+            - name: POSTGRESQL_USERNAME
+              value: "superset"
+            - name: POSTGRESQL_PASSWORD
+              value: "superset"
+            - name: POSTGRESQL_DATABASE
+              value: "superset"
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "no"
+          ports:
+            - containerPort: 5432
+              name: postgresql
+
+---
+# ===========================
+# PostgreSQL Service
+# ===========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  labels:
+    app: postgresql
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: postgresql

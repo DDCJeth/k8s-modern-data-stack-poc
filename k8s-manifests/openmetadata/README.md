@@ -2,6 +2,7 @@
 
 ```bash
 # CREATE K8S SECRET
+kubectl create ns data-gov
 kubectl create secret generic mysql-secrets --from-literal=openmetadata-mysql-password=openmetadata_password
 kubectl create secret generic airflow-secrets --from-literal=openmetadata-airflow-password=admin
 kubectl create secret generic airflow-mysql-secrets --from-literal=airflow-mysql-password=airflow_pass
