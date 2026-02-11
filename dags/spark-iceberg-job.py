@@ -23,7 +23,7 @@ def endBatchJob():
     print("Batch job ended.")
 
 with DAG(
-    'voice_job',
+    'voice-iceberg-populate',
     default_args=default_args,
     description='Submit SparkIceberg job via Spark Operator on K8s',
     schedule=None,  # Trigger manually
@@ -32,10 +32,28 @@ with DAG(
 ) as dag:
 
     # Task 1: Submit the Spark Job (Apply the YAML)
-    submit_job = SparkKubernetesOperator(
-        task_id='submit_spark_iceberg',
+    bronze_job = SparkKubernetesOperator(
+        task_id='populate_bronze_table',
         namespace='airflow',
-        application_file='omea-poc-job.yml', # Path relative to your DAGs folder
+        application_file='sparkapp/batch-populate-bronze-table.yml',
+        kubernetes_conn_id='kubernetes_default',
+    )
+
+
+    # Task 2: Submit the Silver Spark Job (Apply the YAML)
+    silver_job = SparkKubernetesOperator(
+        task_id='populate_silver_table',
+        namespace='airflow',
+        application_file='sparkapp/batch-populate-silverVoice-table.yml',
+        kubernetes_conn_id='kubernetes_default',
+    )
+
+
+    # Task 2: Submit the Silver Spark Job (Apply the YAML)
+    gold_job = SparkKubernetesOperator(
+        task_id='populate_gold_tables',
+        namespace='airflow',
+        application_file='sparkapp/batch-populate-goldVoice-table.yml',
         kubernetes_conn_id='kubernetes_default',
     )
 
@@ -50,5 +68,5 @@ with DAG(
         python_callable=endBatchJob
     )
 
-    start_batch_task >> submit_job >> end_batch_task
+    start_batch_task >> bronze_job >> silver_job >> gold_job >> end_batch_task
     

@@ -13,7 +13,9 @@ helm repo add apache-airflow https://airflow.apache.org
 kubectl create namespace airflow
 
 kubectl create secret generic github-git-sync-secret --from-literal=GIT_SYNC_USERNAME=DDCJeth --from-literal=GIT_SYNC_PASSWORD=$PAT_GITHUB --from-literal=GITSYNC_USERNAME=DDCJeth --from-literal=GITSYNC_PASSWORD=$PAT_GITHUB -n airflow
+
 kubectl get secret --namespace airflow github-git-sync-secret -o jsonpath="{.data.GIT_SYNC_USERNAME}" | base64 --decode
+kubectl get secret --namespace airflow github-git-sync-secret -o jsonpath="{.data.GIT_SYNC_PASSWORD}" | base64 --decode
 
 helm upgrade --install airflow apache-airflow/airflow  -f values-custom.yaml --namespace airflow --debug --timeout 10m01s
 

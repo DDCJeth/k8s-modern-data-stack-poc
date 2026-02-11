@@ -2,7 +2,7 @@ apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
   name: populate-table
-  namespace: default
+  namespace: airflow
 spec:
 
   type: Java
@@ -20,6 +20,10 @@ spec:
     type: Never
 
   sparkConf:
+
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "s3a://spark-logs/"
+    
     "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
     "spark.sql.catalog.iceberg": "org.apache.iceberg.spark.SparkCatalog"
     "spark.sql.catalog.iceberg.type": "rest"
