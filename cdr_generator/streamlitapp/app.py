@@ -53,14 +53,14 @@ with col1:
     
     # Mode selection
     mode = st.radio(
-        "**Mode de Génération**",
-        options=["Batch", "Streaming"],
-        help="Batch: Génère un nombre défini de fichiers. Streaming: Génère en continu."
+        "**Generation Mode**",
+        options=["Batch", "Continuous"],
+        help="Batch: Génère un nombre défini de fichiers. Continuous: Génère en continu."
     )
     
     # CDR Type selection
     cdr_type = st.selectbox(
-        "**Type de CDR**",
+        "**CDR Type**",
         options=["voice", "sms", "data", "all"],
         format_func=lambda x: {
             "voice": "🎙️ Voice Calls",
@@ -97,7 +97,7 @@ with col1:
         records_arg = f" --records {num_records}" if num_records > 0 else ""
         
     else:  # Streaming
-        st.markdown("### ⏱️ Streaming Settings")
+        st.markdown("### ⏱️ Continuous Settings")
         
         num_records = st.number_input(
             "Records per file (optional)",
