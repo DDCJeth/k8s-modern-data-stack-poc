@@ -55,7 +55,7 @@ with col1:
     mode = st.radio(
         "**Generation Mode**",
         options=["Batch", "Continuous"],
-        help="Batch: Génère un nombre défini de fichiers. Continuous: Génère en continu."
+        help="""Batch: Generates a defined number of files. Continuous: Generates files continuously with random generation times."""
     )
     
     # CDR Type selection
@@ -137,46 +137,73 @@ with col1:
 with col2:
     st.markdown("### 📊 Output Preview")
     
-    # Output information
-    if mode == "Batch":
-        st.info(
-            f"""
-            **Batch Configuration:**
-            - Mode: Batch
-            - CDR Type: {cdr_type}
-            - Files: {num_files}
-            - Records per file: {num_records if num_records > 0 else 'Default'}
-            - Output: `cdr_data/` directory
-            
-            The script will generate the specified number of files and exit automatically.
-            """
-        )
+with col2:
+    if cdr_type == "data":
+        st.info("""
+        **Data Sample**
+        ```csv
+        timestamp,session_id,msisdn,apn,session_duration_seconds,bytes_uploaded,bytes_downloaded,cell_id,region,session_end_reason,charging_amount
+        2024-12-14T08:15:00,DATA_001,22370123456,internet.mali,3600,52428800,524288000,CELL_BAM_001,Bamako,NORMAL,500.0
+        2024-12-14T08:20:00,DATA_002,22375987654,internet.mali,1800,10485760,104857600,CELL_BAM_002,Bamako,NORMAL,250.0
+        ```
+        """)
+
+    elif cdr_type == "sms":
+        st.info("""
+        **SMS Sample**
+        ```csv
+        timestamp,sms_id,sender_msisdn,receiver_msisdn,sms_type,message_length,cell_id,region,delivery_status,charging_amount
+        2024-12-14T08:15:30,SMS_001,22370123456,22376234567,MO,45,CELL_BAM_001,Bamako,DELIVERED,25.0
+        2024-12-14T08:16:15,SMS_002,22375987654,22370456789,MO,128,CELL_BAM_002,Bamako,DELIVERED,25.0
+        ```
+        """)
+
+    elif cdr_type == "voice":
+        st.info("""
+        **Voice Sample**
+        ```csv
+        timestamp,call_id,caller_msisdn,callee_msisdn,call_type,duration_seconds,cell_id,region,termination_reason,charging_amount
+        2024-12-14T08:15:23,CALL_001,22370123456,22376234567,MOC,345,CELL_BAM_001,Bamako,NORMAL,172.5
+        2024-12-14T08:16:45,CALL_002,22375987654,22370456789,MOC,128,CELL_BAM_002,Bamako,NORMAL,64.0
+        ```
+        """)
+
     else:
-        st.info(
-            f"""
-            **Streaming Configuration:**
-            - Mode: Streaming
-            - CDR Type: {cdr_type}
-            - Records per file: {num_records if num_records > 0 else 'Default'}
-            - Delay range: {min_delay}s - {max_delay}s
-            - Output: `cdr_data/` directory
-            
-            The script will generate files continuously until you stop it.
-            Press Stop button or close the terminal window to halt generation.
-            """
-        )
-    
+        st.info("""
+        **Data Sample**
+        ```csv
+        timestamp,session_id,msisdn,apn,session_duration_seconds,bytes_uploaded,bytes_downloaded,cell_id,region,session_end_reason,charging_amount
+        2024-12-14T08:15:00,DATA_001,22370123456,internet.mali,3600,52428800,524288000,CELL_BAM_001,Bamako,NORMAL,500.0
+        2024-12-14T08:20:00,DATA_002,22375987654,internet.mali,1800,10485760,104857600,CELL_BAM_002,Bamako,NORMAL,250.0
+        ```
+        
+        **SMS Sample**
+        ```csv
+        timestamp,sms_id,sender_msisdn,receiver_msisdn,sms_type,message_length,cell_id,region,delivery_status,charging_amount
+        2024-12-14T08:15:30,SMS_001,22370123456,22376234567,MO,45,CELL_BAM_001,Bamako,DELIVERED,25.0
+        2024-12-14T08:16:15,SMS_002,22375987654,22370456789,MO,128,CELL_BAM_002,Bamako,DELIVERED,25.0
+        ```
+
+        **Voice Sample**
+        ```csv
+        timestamp,call_id,caller_msisdn,callee_msisdn,call_type,duration_seconds,cell_id,region,termination_reason,charging_amount
+        2024-12-14T08:15:23,CALL_001,22370123456,22376234567,MOC,345,CELL_BAM_001,Bamako,NORMAL,172.5
+        2024-12-14T08:16:45,CALL_002,22375987654,22370456789,MOC,128,CELL_BAM_002,Bamako,NORMAL,64.0
+        ```
+        """)
+
+
     # Statistics area
     st.markdown("---")
-    st.markdown("### 📈 Generation Statistics")
+    # st.markdown("### 📈 Generation Statistics")
     
-    stats_col1, stats_col2, stats_col3 = st.columns(3)
-    with stats_col1:
-        st.metric("Mode", "Batch" if mode == "Batch" else "Streaming")
-    with stats_col2:
-        st.metric("CDR Type", cdr_type.upper())
-    with stats_col3:
-        st.metric("Status", "Ready" if not st.session_state.generation_active else "Running")
+    # stats_col1, stats_col2, stats_col3 = st.columns(3)
+    # with stats_col1:
+    #     st.metric("Mode", "Batch" if mode == "Batch" else "Streaming")
+    # with stats_col2:
+    #     st.metric("CDR Type", cdr_type.upper())
+    # with stats_col3:
+    #     st.metric("Status", "Ready" if not st.session_state.generation_active else "Running")
 
 # Separator
 st.markdown("---")
