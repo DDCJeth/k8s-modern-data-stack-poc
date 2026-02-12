@@ -1,3 +1,10 @@
+# SFTP SERVER
+
+```bash
+docker run --rm --name fileserver -p 2222:22 -d atmoz/sftp:debian foo:pass:::upload
+docker run     -v /tmp/upload:/home/foo/upload     -p 2222:22 -d atmoz/sftp:debian     foo:pass:1001
+```
+
 # K8S cluster
 
 ```bash

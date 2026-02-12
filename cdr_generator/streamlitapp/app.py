@@ -12,6 +12,7 @@ import sys
 import os
 
 SFTP_HOST=os.getenv("SFTP_HOST","172.17.0.2")
+SFTP_PORT=os.getenv("SFTP_PORT",22)
 SFTP_USER=os.getenv("SFTP_USER", "foo")
 SFTP_PASS=os.getenv("SFTP_PASS", "pass")
 SFTP_PATH=os.getenv("SFTP_PATH", "/upload")
@@ -250,6 +251,7 @@ if st.session_state.generation_active:
             "--file", str(num_files),
             "--storage", "sftp",
             "--sftp-host", SFTP_HOST,
+            "--sftp-port", SFTP_PORT,
             "--sftp-user", SFTP_USER,
             "--sftp-password", SFTP_PASS,
             "--sftp-path", SFTP_PATH
@@ -266,6 +268,7 @@ if st.session_state.generation_active:
             "--max-delay", str(max_delay),
             "--storage", "sftp",
             "--sftp-host", SFTP_HOST,
+            "--sftp-port", SFTP_PORT,
             "--sftp-user", SFTP_USER,
             "--sftp-password", SFTP_PASS,
             "--sftp-path", SFTP_PATH

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: cdr-data-pvc
-  namespace: nifi
+  namespace: app
 spec:
   accessModes: ["ReadWriteMany"]
   resources:
@@ -13,7 +13,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cdr-generator
-  namespace: nifi
+  namespace: app
   labels:
     app: cdr-generator
 spec:
@@ -28,10 +28,20 @@ spec:
     spec:
       containers:
         - name: cdr-generator
-          image: ddcj/cdr-generator:v1
+          image: ddcj/cdr-generator:v2
           env:
             - name: PYTHONUNBUFFERED
               value: "1"
+            - name: SFTP_HOST
+              value: "fileserver"
+            - name: SFTP_PORT
+              value: 22
+            - name: SFTP_USER
+              value: "foo"
+            - name: SFTP_PASS
+              value: "passwordSftp"
+            - name: SFTP_PATH
+              value: "/upload"                                          
           ports:
             - containerPort: 8501
               name: http
@@ -53,7 +63,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: cdr-generator
-  namespace: nifi
+  namespace: app
   labels:
     app: cdr-generator
 spec:

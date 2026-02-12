@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fileserver
+  namespace: app
+spec:
+  type: ClusterIP  # Change to 'NodePort' or 'LoadBalancer' if needed for your environment
+  ports:
+    - port: 2222      # External port (matches docker -p 2222:...)
+      targetPort: 22  # Internal container port
+      protocol: TCP
+      name: sftp
+  selector:
+    app: fileserver
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fileserver
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fileserver
+  template:
+    metadata:
+      labels:
+        app: fileserver
+    spec:
+      containers:
+        - name: sftp
+          image: atmoz/sftp:debian
+          # The argument "foo:pass:::upload" configures user:password and directory
+          args: ["foo:passwordSftp:::upload"]
+          ports:
+            - containerPort: 22
+          securityContext:
+            capabilities:
+              add: ["SYS_ADMIN"] # Required by atmoz/sftp for chroot management

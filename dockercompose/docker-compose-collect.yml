@@ -1,7 +1,7 @@
 services:
   cdr-generator:
     build: .
-    image: poc_rfp_omea/cdr-generator:latest
+    image: ddcj/cdr-generator:v2
     container_name: cdr-generator
     ports:
       - "8501:8501"
@@ -9,12 +9,25 @@ services:
       - /home/jeth/Projects/OMEA/POC/Poc_rfp_omea/cdr_generator/scripts/cdr_data:/app/cdr_data
     environment:
       - PYTHONUNBUFFERED=1
+      - SFTP_HOST=sftp
+      - SFTP_USER=foo
+      - SFTP_PASS=pass
+      - SFTP_PATH=/upload
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/"]
       interval: 30s
       timeout: 3s
       retries: 3
+
+
+
+  sftp:
+      image: atmoz/sftp:debian
+      command: foo:pass:::upload
+
+
+
 
   nifi:
     image: apache/nifi:2.7.1
