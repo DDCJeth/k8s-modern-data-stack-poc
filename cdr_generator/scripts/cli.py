@@ -1,5 +1,6 @@
 """
 Interface de ligne de commande pour le générateur de CDR
+Mise à jour : Support pour les arguments de stockage (S3 et SFTP)
 """
 
 import argparse
@@ -11,19 +12,18 @@ def parse_arguments():
         description='Générateur de données CDRs',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
-Exemples d'utilisation (Mode batch):
-  python generate_cdr.py --type voice --file 5 --records 1000
-  python generate_cdr.py --type sms --file 3 --records 2000
-  python generate_cdr.py --type data --file 10 --records 500
-  python generate_cdr.py --type all --file 10 --records 1000
+Exemples d'utilisation (Mode batch local):
+  python batch_generate_cdr.py --type voice --file 5 --records 1000
 
-Exemples d'utilisation (Mode streaming):
-  python streaming_generate_cdr.py --type voice --records 1000
-  python streaming_generate_cdr.py --type sms --min-delay 5 --max-delay 30
-  python streaming_generate_cdr.py --type data --records 2000 --min-delay 10 --max-delay 60
+Exemples d'utilisation (Stockage S3):
+  python batch_generate_cdr.py --type sms --storage s3 --bucket mon-bucket-aws
+
+Exemples d'utilisation (Stockage SFTP):
+  python batch_generate_cdr.py --type data --storage sftp --sftp-host 192.168.1.50 --sftp-user user --sftp-password pass --sftp-path
         '''
     )
     
+    # --- Arguments existants ---
     parser.add_argument(
         '--type',
         choices=['voice', 'sms', 'data', 'all'],
@@ -58,6 +58,53 @@ Exemples d'utilisation (Mode streaming):
         default=120,
         help='Délai maximum entre les générations en mode streaming en secondes (défaut: 120)'
     )
+
+    # --- Nouveaux arguments pour le stockage ---
+    storage_group = parser.add_argument_group('Options de stockage')
+
+    storage_group.add_argument(
+        '--storage',
+        choices=['local', 's3', 'sftp'],
+        default='local',
+        help='Destination du stockage des fichiers (défaut: local)'
+    )
+
+    # Arguments S3
+    s3_group = parser.add_argument_group('Options S3 (requis si --storage s3)')
+    s3_group.add_argument(
+        '--bucket',
+        type=str,
+        help='Nom du bucket AWS S3'
+    )
+
+    # Arguments SFTP
+    sftp_group = parser.add_argument_group('Options SFTP (requis si --storage sftp)')
+    sftp_group.add_argument(
+        '--sftp-host',
+        type=str,
+        help='Adresse hôte du serveur SFTP'
+    )
+    sftp_group.add_argument(
+        '--sftp-user',
+        type=str,
+        help='Nom d\'utilisateur SFTP'
+    )
+    sftp_group.add_argument(
+        '--sftp-password',
+        type=str,
+        help='Mot de passe SFTP'
+    )
+    sftp_group.add_argument(
+        '--sftp-port',
+        type=int,
+        default=22,
+        help='Port SFTP (défaut: 22)'
+    )
+    sftp_group.add_argument(
+        '--sftp-path',
+        type=str,
+        default='/',
+        help='Chemin du répertoire distant sur le serveur SFTP (défaut: /)'
+    )
     
     return parser.parse_args()
-
