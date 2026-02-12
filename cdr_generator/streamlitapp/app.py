@@ -9,6 +9,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 import sys
+import os
+
+SFTP_HOST=os.getenv("SFTP_HOST","172.17.0.2")
+SFTP_USER=os.getenv("SFTP_USER", "foo")
+SFTP_PASS=os.getenv("SFTP_PASS", "pass")
+SFTP_PATH=os.getenv("SFTP_PATH", "/upload")
 
 # Add scripts folder to path
 scripts_path = Path(__file__).parent.parent / "scripts"
@@ -236,23 +242,33 @@ if st.session_state.generation_active:
     
     # Build command
     if mode == "Batch":
-        script_name = "bash_generate_cdr.py"
+        script_name = "batch_generation_cdr.py"
         cmd = [
             "python3",
             str(scripts_path / script_name),
             "--type", cdr_type,
-            "--file", str(num_files)
+            "--file", str(num_files),
+            "--storage", "sftp",
+            "--sftp-host", SFTP_HOST,
+            "--sftp-user", SFTP_USER,
+            "--sftp-password", SFTP_PASS,
+            "--sftp-path", SFTP_PATH
         ]
         if num_records > 0:
             cmd.extend(["--records", str(num_records)])
     else:
-        script_name = "streaming_generate_cdr.py"
+        script_name = "continuous_generation_cdr.py"
         cmd = [
             "python3",
             str(scripts_path / script_name),
             "--type", cdr_type,
             "--min-delay", str(min_delay),
-            "--max-delay", str(max_delay)
+            "--max-delay", str(max_delay),
+            "--storage", "sftp",
+            "--sftp-host", SFTP_HOST,
+            "--sftp-user", SFTP_USER,
+            "--sftp-password", SFTP_PASS,
+            "--sftp-path", SFTP_PATH
         ]
         if num_records > 0:
             cmd.extend(["--records", str(num_records)])

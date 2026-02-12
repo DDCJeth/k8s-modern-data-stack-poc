@@ -2,6 +2,8 @@
 Configuration et constantes pour le générateur de CDR
 """
 
+import os
+
 # Régions du Mali
 REGIONS = [
     'Bamako', 'Segou', 'Sikasso', 'Kayes',
