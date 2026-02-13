@@ -1,3 +1,10 @@
+# GENERATION 
+
+```bash
+python /app/scripts/batch_generation_cdr.py --type data --file 100 --records 1000 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+```
+
+
 # SFTP SERVER
 
 ```bash
