@@ -64,7 +64,7 @@ server:
 catalogs:
   kafka: |
     connector.name=kafka
-    kafka.table-names=voice-bronze-cdr,voice-silver-cdr,voice-gold-cdr,voice-gold-cdr-tower
+    kafka.table-names=voice-bronze-cdr,voice-silver-cdr,voice-gold-cdr,voice-gold-cdr-tower,sms-bronze-cdr,sms-silver-cdr,sms-gold-cdr,sms-gold-cdr-tower,data-bronze-cdr,data-silver-cdr,data-gold-cdr,data-gold-cdr-tower
     kafka.nodes=kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
 
   iceberg: |

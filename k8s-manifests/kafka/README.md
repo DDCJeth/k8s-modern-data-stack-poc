@@ -25,6 +25,8 @@ kubectl apply -f kafka-cluster.yaml
 ## [Hands on](https://strimzi.io/docs/operators/latest/deploying.html#deploy-client-access-str)
 ```bash
 #[Producer]
+kubectl run kafka-producer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-producer.sh --bootstrap-server kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic test
+
 kubectl run kafka-producer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-producer.sh --bootstrap-server kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-bronze-cdr
 # if producer already exists
 kubectl exec -it kafka-producer -- bin/kafka-console-producer.sh --bootstrap-server kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-bronze-cdr
@@ -32,6 +34,10 @@ kubectl exec -it kafka-producer -- bin/kafka-console-producer.sh --bootstrap-ser
 #[Consumer]
 kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-bronze-cdr --from-beginning
 
+# omea data platform
+kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-bronze-cdr --from-beginning
+
+kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-bronze-cdr --from-beginning
 
 ```
 
