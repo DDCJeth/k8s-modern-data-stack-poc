@@ -28,7 +28,7 @@ with DAG(
     'sms-iceberg-industrialized',
     default_args=default_args,
     schedule=None,
-    template_searchpath=['/usr/local/airflow/include'],
+    # template_searchpath=['/usr/local/airflow/include'],
     tags=['spark', 'iceberg', 'prod'],
     catchup=False,
 ) as dag:
@@ -37,7 +37,7 @@ with DAG(
     bronze_job = SparkKubernetesOperator(
         task_id='submit_bronze',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='template-bronze.yml',
+        application_file='batch-template-bronze.yml',
         params={**COMMON_PARAMS, 'job_name': 'sms-bronze', 'main_class': 'PopulateBronzeTable', 'input_path':'s3a://datalake/sms/', 'logType':'sms', 'table_name':'bronze.sms'}
     )
 
@@ -55,7 +55,7 @@ with DAG(
     silver_job = SparkKubernetesOperator(
         task_id='submit_silver',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='template-silver.yml',
+        application_file='batch-template-silver.yml',
         params={**COMMON_PARAMS, 'job_name': 'sms-silver', 'main_class': 'SmsSilverTable', 'dateToProcess': '{{ ds }}', 'input_table':'bronze.sms', 'output_table':'silver.sms'}
     )
 
@@ -72,7 +72,7 @@ with DAG(
     gold_job = SparkKubernetesOperator(
         task_id='submit_gold',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='template-gold.yml',
+        application_file='batch-template-gold.yml',
         params={**COMMON_PARAMS, 'job_name': 'sms-gold', 'main_class': 'SmsGoldTables', 'dateToProcess': '{{ ds }}', 'input_table':'silver.sms'}
     )
 

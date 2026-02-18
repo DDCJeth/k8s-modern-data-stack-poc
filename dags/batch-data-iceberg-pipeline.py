@@ -25,10 +25,10 @@ COMMON_PARAMS = {
 
 
 with DAG(
-    'voice-iceberg-industrialized',
+    'data-iceberg-industrialized',
     default_args=default_args,
     schedule=None,
-    template_searchpath=['/usr/local/airflow/include'],
+    # template_searchpath=['/usr/local/airflow/include'],
     tags=['spark', 'iceberg', 'prod'],
     catchup=False,
 ) as dag:
@@ -37,8 +37,8 @@ with DAG(
     bronze_job = SparkKubernetesOperator(
         task_id='submit_bronze',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='template-bronze.yml',
-        params={**COMMON_PARAMS, 'job_name': 'voice-bronze', 'main_class': 'PopulateBronzeTable', 'input_path':'s3a://datalake/voice/', 'logType':'voice', 'table_name':'bronze.voice'}
+        application_file='batch-template-bronze.yml',
+        params={**COMMON_PARAMS, 'job_name': 'data-bronze', 'main_class': 'PopulateBronzeTable', 'input_path':'s3a://datalake/data/', 'logType':'data', 'table_name':'bronze.data'}
     )
 
     # Le Sensor attend que le job Kubernetes atteigne l'état "Succeeded"
@@ -55,8 +55,8 @@ with DAG(
     silver_job = SparkKubernetesOperator(
         task_id='submit_silver',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='template-silver.yml',
-        params={**COMMON_PARAMS, 'job_name': 'voice-silver', 'main_class': 'VoiceSilverTable', 'dateToProcess': '{{ ds }}', 'input_table':'bronze.voice', 'output_table':'silver.voice'}
+        application_file='batch-template-silver.yml',
+        params={**COMMON_PARAMS, 'job_name': 'data-silver', 'main_class': 'DataSilverTable', 'dateToProcess': '{{ ds }}', 'input_table':'bronze.data', 'output_table':'silver.data'}
     )
 
     monitor_silver = SparkKubernetesSensor(
@@ -72,8 +72,8 @@ with DAG(
     gold_job = SparkKubernetesOperator(
         task_id='submit_gold',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='template-gold.yml',
-        params={**COMMON_PARAMS, 'job_name': 'voice-gold', 'main_class': 'VoiceGoldTables', 'dateToProcess': '{{ ds }}', 'input_table':'silver.voice'}
+        application_file='batch-template-gold.yml',
+        params={**COMMON_PARAMS, 'job_name': 'data-gold', 'main_class': 'DataGoldTables', 'dateToProcess': '{{ ds }}', 'input_table':'silver.data'}
     )
 
     monitor_gold = SparkKubernetesSensor(
