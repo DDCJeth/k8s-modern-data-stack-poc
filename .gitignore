@@ -15,3 +15,6 @@ jobs/spark/spark-kafka-streaming/target
 
 k8s-manifests/nifi/apache-nifi-helm-main
 k8s-manifests/superset/superset
+dags/sparkapp/minio-creds.yaml
+tshoot.txt
+jobs/spark/omea-iceberg.conf

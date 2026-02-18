@@ -1,0 +1,9 @@
+{
+  "minio_secret_key": "***",
+  "minio_endpoint": "http://minio.minio.svc.cluster.local:9000",
+  "minio_access_key": "jdanho",
+  "iceberg_warehouse": "s3://spark-data/",
+  "iceberg_jdbc_user": "trino",
+  "iceberg_jdbc_uri": "jdbc:postgresql://postgres-trino.trino.svc.cluster.local:5432/trinodb",
+  "iceberg_jdbc_password": "***"
+}

@@ -25,6 +25,15 @@ kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 
 kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-gold-cdr --from-beginning
 ```
 
+
+## SPARK-SHELL
+```bash
+# Deploy Trino pod for client
+kubectl run sparkshell -it --rm --restart=Never  --image=ddcj/spark-job:omea-pocv0.1 -- /bin/bash -c "sleep infinity"
+kubectl exec -it sparkshell -- bash
+
+```
+
 ## TRINO CLIENT
 ```bash
 # Deploy Trino pod for client
@@ -32,19 +41,34 @@ kubectl run trino-cli -ti --image=trinodb/trino:latest --restart=Never --rm=true
 ```
 
 ```sql
+
+--- données du POC
+select count(*) from iceberg.bronze.voice; --800000
+select count(*) from iceberg.silver.voice;
+
+
+select count(*) from iceberg.bronze.sms;
+select count(*) from iceberg.silver.sms;
+
+
+select count(*) from iceberg.bronze.data;
+select count(*) from iceberg.silver.data;
+
 -- Test trino
 SELECT * FROM tpch.sf3000.customer limit 10;
 
 -- Test iceberg
+DROP TABLE iceberg.test.logs;
+DROP SCHEMA iceberg.test;
 CREATE SCHEMA iceberg.test;
 
 CREATE TABLE iceberg.test.logs (
     id bigint, 
     message varchar, 
     level varchar
-) 
+) ;
 WITH (
-    partitioning = ARRAY['level'] -- Partitions by level
+    partitioning = ARRAY['level']
 );
 
 
@@ -58,8 +82,34 @@ SELECT * FROM iceberg.test.logs;
 -- Test Kafka
 CREATE CATALOG streaming USING kafka
 WITH (
+  "kafka.table-names" = 'voice-bronze-cdr',
+  "kafka.nodes" = 'cluster-kafka-bootstrap.kafka.svc.cluster.local:9092'
+);
+
+CREATE CATALOG streaming USING kafka
+WITH (
   "kafka.table-names" = 'voice-bronze-cdr,voice-silver-cdr,voice-gold-cdr,voice-gold-cdr-tower,sms-bronze-cdr,sms-silver-cdr,sms-gold-cdr,sms-gold-cdr-tower,data-bronze-cdr,data-silver-cdr,data-gold-cdr,data-gold-cdr-tower',
   "kafka.nodes" = 'cluster-kafka-bootstrap.kafka.svc.cluster.local:9092'
 );
+
+
+
+
+-- TEST DAVID
+create schema if not exists iceberg.iceberg_schema
+    with (LOCATION = 's3://trino-data/icebergtest/');
+
+CREATE TABLE IF NOT EXISTS iceberg.test2.log (
+    id INT,
+    message VARCHAR,
+    level VARCHAR
+)
+WITH (
+    format = 'PARQUET'
+);
+
+
+INSERT INTO iceberg.test2.log VALUES (1, 'hello iceberg', 'INFO')
+
 
 ```

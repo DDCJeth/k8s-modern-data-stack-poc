@@ -5,7 +5,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 
 default_args = {
-    'owner': 'airflow',
+    'owner': 'ddcj',
     'depends_on_past': False,
     'start_date': datetime(2026, 1, 1),
     'email_on_failure': False,
@@ -23,19 +23,19 @@ def endBatchJob():
     print("Batch job ended.")
 
 with DAG(
-    'voice-iceberg-populate',
+    'data-iceberg-populate',
     default_args=default_args,
     description='Submit SparkIceberg job via Spark Operator on K8s',
     schedule=None,  # Trigger manually
-    tags=['spark', 'kubernetes'],
+    tags=['spark', 'kubernetes', 'data', 'iceberg'],
     catchup=False,
 ) as dag:
 
     # Task 1: Submit the Spark Job (Apply the YAML)
     bronze_job = SparkKubernetesOperator(
         task_id='populate_bronze_table',
-        namespace='airflow',
-        application_file='sparkapp/batch-populate-bronze-table.yml',
+        namespace='artefact',
+        application_file='sparkapp/data-batch-bronze-table.yml',
         kubernetes_conn_id='kubernetes_default',
     )
 
@@ -43,8 +43,8 @@ with DAG(
     # Task 2: Submit the Silver Spark Job (Apply the YAML)
     silver_job = SparkKubernetesOperator(
         task_id='populate_silver_table',
-        namespace='airflow',
-        application_file='sparkapp/batch-populate-silverVoice-table.yml',
+        namespace='artefact',
+        application_file='sparkapp/data-batch-silver-table.yml',
         kubernetes_conn_id='kubernetes_default',
     )
 
@@ -52,8 +52,8 @@ with DAG(
     # Task 2: Submit the Silver Spark Job (Apply the YAML)
     gold_job = SparkKubernetesOperator(
         task_id='populate_gold_tables',
-        namespace='airflow',
-        application_file='sparkapp/batch-populate-goldVoice-table.yml',
+        namespace='artefact',
+        application_file='sparkapp/data-batch-gold-tables.yml',
         kubernetes_conn_id='kubernetes_default',
     )
 

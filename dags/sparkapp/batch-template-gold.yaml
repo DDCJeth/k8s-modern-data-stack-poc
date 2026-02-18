@@ -1,0 +1,80 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  # On rend le nom unique pour éviter les collisions en cas de retries
+  name: "{{ params.job_name }}-{{ ds_nodash }}-{{ task_instance.try_number }}"
+  namespace: {{ params.namespace }}
+spec:
+  type: Java
+  mode: cluster
+  image: "{{ params.image }}"
+  mainClass: {{ params.main_class }}
+  mainApplicationFile: "local:///opt/spark/apps/app.jar"
+  arguments:
+    - "{{ params.dateToProcess }}"
+    - "{{ params.input_table }}"
+
+  sparkVersion: "4.0.1"
+  restartPolicy:
+    type: Never
+  # Supprime automatiquement les ressources 1h après la réussite/échec
+  timeToLiveSeconds: 3600
+
+  sparkConf:
+    "spark.jars.ivy": "/tmp/.ivy"
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "s3a://spark-logs/"
+    
+    # Configuration Iceberg via Variables Airflow ou Connexions
+    ## 1. Extensions & Catalog Definition
+    "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    "spark.sql.catalog.iceberg": "org.apache.iceberg.spark.SparkCatalog"
+    "spark.sql.catalog.iceberg.catalog-impl": "org.apache.iceberg.jdbc.JdbcCatalog"
+    "spark.sql.catalog.iceberg.jdbc.driver": "org.postgresql.Driver"
+    "spark.sql.defaultCatalog": "iceberg"
+
+    ## 2. JDBC Connection (The "Brain")
+    "spark.sql.catalog.iceberg.uri": "{{ var.value.get('iceberg_jdbc_uri') }}"
+    "spark.sql.catalog.iceberg.jdbc.user": "{{ var.value.get('iceberg_jdbc_user') }}"
+    "spark.sql.catalog.iceberg.jdbc.password": "{{ var.value.get('iceberg_jdbc_password') }}"
+    "spark.sql.catalog.iceberg.user": "{{ var.value.get('iceberg_jdbc_user') }}"
+    "spark.sql.catalog.iceberg.password": "{{ var.value.get('iceberg_jdbc_password') }}"
+
+
+    # 3. Iceberg Native Storage (S3FileIO - The "Mover")
+    "spark.sql.catalog.iceberg.io-impl": "org.apache.iceberg.aws.s3.S3FileIO"
+    "spark.sql.catalog.iceberg.warehouse": "{{ var.value.get('iceberg_warehouse') }}"
+    "spark.sql.catalog.iceberg.s3.endpoint": "{{ var.value.get('minio_endpoint') }}"
+    "spark.sql.catalog.iceberg.s3.access-key-id": "{{ var.value.get('minio_access_key') }}"
+    "spark.sql.catalog.iceberg.s3.secret-access-key": "{{ var.value.get('minio_secret_key') }}"
+    "spark.sql.catalog.iceberg.s3.path-style-access": "true"
+    "spark.sql.catalog.iceberg.s3.force-path-style": "true" 
+    "spark.sql.catalog.iceberg.s3.signer-type": "standard"
+
+
+    # On utilise les env vars injectées via Secret pour les credentials Spark
+    "spark.hadoop.fs.s3a.endpoint": "{{ var.value.get('minio_endpoint') }}"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.access.key": "{{ var.value.get('minio_access_key') }}"
+    "spark.hadoop.fs.s3a.secret.key": "{{ var.value.get('minio_secret_key') }}"
+    "spark.hadoop.fs.s3a.path.style.access": "true"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
+
+
+
+  driver:
+    cores: {{ params.driver_cores | default(1) }}
+    memory: "{{ params.driver_memory | default('512m') }}"
+    serviceAccount: {{ params.service_account }}
+    envFrom:
+      - secretRef:
+          name: {{ params.secret_name }}
+
+  executor:
+    cores: {{ params.executor_cores | default(1) }}
+    instances: {{ params.executor_instances | default(1) }}
+    memory: "{{ params.executor_memory | default('512m') }}"
+    envFrom:
+      - secretRef:
+          name: {{ params.secret_name }}

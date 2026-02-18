@@ -1,0 +1,97 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: voice-gold-populate-topic
+  namespace: default
+spec:
+  type: Java
+  mode: cluster
+  image: "ddcj/spark-kafka:omea-pocv2"
+  mainClass: VoiceGoldStream
+  mainApplicationFile: "local:///opt/spark/apps/app.jar"
+  arguments:
+    - "cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+    - "voice-silver-cdr"
+    - "voice-gold-cdr"
+    - "s3a://spark-data/checkpoints/voice-silver-cdr"
+      
+  sparkVersion: "4.0.1"  
+  
+  # Gestion des redémarrages pour le Streaming
+  restartPolicy:
+    type: OnFailure
+    onFailureRetries: 10
+    onFailureRetryInterval: 20
+    onSubmissionFailureRetries: 5
+
+  sparkConf:
+    "spark.jars.ivy": "/tmp/.ivy"
+    
+    # --- Observabilité ---
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "s3a://spark-logs/"
+    
+    # --- Configuration S3A (Optimisée MinIO) ---
+    "spark.hadoop.fs.s3a.endpoint": "http://minio.minio.svc.cluster.local:9000"
+    "spark.hadoop.fs.s3a.path.style.access": "true"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.fast.upload": "true"
+    "spark.hadoop.fs.s3a.connection.ssl.enabled": "false" # Si MinIO n'est pas en HTTPS interne
+
+    # --- Optimisation Streaming & Resilience ---
+    "spark.streaming.stopGracefullyOnShutdown": "true"
+    "spark.streaming.backpressure.enabled": "true"
+    "spark.sql.streaming.checkpointLocation": "s3a://spark-data/checkpoints/voice-gold-cdr"
+    "spark.sql.shuffle.partitions": "2" # Ajusté car 1 executor / 1 core (éviter l'overhead)
+
+  driver:
+    cores: 1
+    # On définit des limites strictes pour garantir la QoS Kubernetes
+    coreLimit: "1200m"
+    memory: "1g" # Augmenté car 512m est très juste pour Spark 4.x + S3A
+    memoryOverhead: "256m" 
+    serviceAccount: spark-operator-spark
+    envFrom:
+      - secretRef:
+          name: minio-creds
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_ACCESS_KEY_ID } }
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_SECRET_ACCESS_KEY } }
+      - name: AWS_REGION
+        valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_REGION } }
+
+  executor:
+    instances: 1
+    cores: 1
+    memory: "1g"
+    memoryOverhead: "384m" # Plus élevé sur l'executor pour le buffer Kafka
+    envFrom:
+      - secretRef:
+          name: minio-creds
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_ACCESS_KEY_ID } }
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_SECRET_ACCESS_KEY } }
+      - name: AWS_REGION
+        valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_REGION } }
+    
+    # Empêche de mettre l'exécuteur sur le même nœud que le driver si possible
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: spark-role
+                    operator: In
+                    values: ["driver"]
+              topologyKey: "kubernetes.io/hostname"
+
+  deps:
+    packages:
+      - "org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.1"
+      - "org.apache.hadoop:hadoop-aws:3.3.4" # Nécessaire pour S3A si non présent dans l'image

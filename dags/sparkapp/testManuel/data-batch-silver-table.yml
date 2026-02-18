@@ -1,0 +1,110 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: populate-silver-data-table
+  namespace: artefact
+spec:
+  # deps:
+  #   packages:
+  #     - "org.postgresql:postgresql:42.7.4"
+
+  type: Java
+  mode: cluster
+  image: "ddcj/spark-job:omea-pocv0.1"
+  mainClass: DataSilverTable
+  mainApplicationFile: "local:///opt/spark/apps/app.jar"
+  arguments:
+    - "2026-02-18"
+    - "bronze.data"
+    - "silver.data"
+
+  sparkVersion: "4.0.1"
+  restartPolicy:
+    type: Never
+
+  sparkConf:
+    "spark.jars.ivy": "/tmp/.ivy"
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "s3a://spark-logs/"
+
+    # 1. Extensions & Catalog Definition
+    "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    "spark.sql.catalog.iceberg": "org.apache.iceberg.spark.SparkCatalog"
+    "spark.sql.catalog.iceberg.catalog-impl": "org.apache.iceberg.jdbc.JdbcCatalog"
+    # "spark.sql.catalog.iceberg.type": "jdbc"
+    "spark.sql.catalog.iceberg.jdbc.driver": "org.postgresql.Driver"
+    "spark.sql.catalog.iceberg.jdbc.user": "trino"
+    "spark.sql.catalog.iceberg.jdbc.password": "trino123"
+    "spark.sql.defaultCatalog": "iceberg"
+
+    # 2. JDBC Connection (The "Brain")
+    "spark.sql.catalog.iceberg.uri": "jdbc:postgresql://postgres-trino.trino.svc.cluster.local:5432/trinodb"
+    "spark.sql.catalog.iceberg.user": "trino"
+    "spark.sql.catalog.iceberg.password": "trino123"
+
+    # 3. Iceberg Native Storage (S3FileIO - The "Mover")
+    "spark.sql.catalog.iceberg.io-impl": "org.apache.iceberg.aws.s3.S3FileIO"
+    "spark.sql.catalog.iceberg.warehouse": "s3://spark-data/"
+    "spark.sql.catalog.iceberg.s3.endpoint": "http://minio.minio.svc.cluster.local:9000"
+    "spark.sql.catalog.iceberg.s3.access-key-id": "jdanho"
+    "spark.sql.catalog.iceberg.s3.secret-access-key": "9sAf9qJ9iNYg67"
+    "spark.sql.catalog.iceberg.s3.path-style-access": "true"
+    "spark.sql.catalog.iceberg.s3.force-path-style": "true" 
+    "spark.sql.catalog.iceberg.s3.signer-type": "standard"
+
+    # 4. Hadoop S3A Compatibility (The "Bridge")
+    "spark.hadoop.fs.s3a.endpoint": "http://minio.minio.svc.cluster.local:9000"
+    "spark.hadoop.fs.s3a.access.key": "jdanho"
+    "spark.hadoop.fs.s3a.secret.key": "9sAf9qJ9iNYg67"
+    "spark.hadoop.fs.s3a.path.style.access": "true"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
+
+
+  driver:
+    cores: 1
+    memory: "512m"
+    serviceAccount: spark-operator-spark
+    # Injecting Secret as Env Vars
+    envFrom:
+      - secretRef:
+          name: minio-creds
+    # Mapping Env Vars to Spark Properties
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: minio-creds
+            key: AWS_ACCESS_KEY_ID
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-creds
+            key: AWS_REGION
+      - name: AWS_REGION
+        valueFrom:
+          secretKeyRef:
+            name: minio-creds
+            key: AWS_REGION
+
+  executor:
+    cores: 1
+    instances: 1
+    memory: "512m"
+    # Executors need the credentials too!
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: minio-creds
+            key: AWS_ACCESS_KEY_ID 
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-creds
+            key: AWS_SECRET_ACCESS_KEY
+      - name: AWS_REGION
+        valueFrom:
+          secretKeyRef:
+            name: minio-creds
+            key: AWS_REGION 
