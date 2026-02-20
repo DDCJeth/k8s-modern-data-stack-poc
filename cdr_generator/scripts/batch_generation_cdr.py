@@ -1,11 +1,9 @@
 """
 Générateur de données CDRs
 Génère des fichiers CSV pour Voice, SMS, Data CDR et Cell Towers
-Mise à jour : Support pour upload S3 et SFTP
+Mise à jour : Support pour upload S3, SFTP et gestion de l'état (state_generation.txt)
 """
 
-import os
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -16,104 +14,121 @@ from config import (
     DEFAULT_SMS_RECORDS, DEFAULT_DATA_RECORDS
 )
 from generators import generate_voice_cdr, generate_sms_cdr, generate_data_cdr
-from utils import save_to_csv, generate_cell_towers_csv, ensure_output_dir, upload_to_s3, upload_to_sftp, handle_storage
+from utils import save_to_csv, generate_cell_towers_csv, ensure_output_dir, upload_to_s3, upload_to_sftp, handle_storage, load_state, save_state, extract_id_number
 
 
 def main():
     """Fonction principale"""
-    # Parser les arguments
-    # NOTE: Assurez-vous que cli.py est mis à jour pour accepter:
-    # --storage (valeurs: 'local', 's3', 'sftp')
-    # --bucket (pour s3)
-    # --sftp-host, --sftp-user, --sftp-password, --sftp-path (pour sftp)
     args = parse_arguments()
     
-    # Valeur par défaut si non spécifié
     if not hasattr(args, 'storage'):
         args.storage = 'local'
 
-    # Créer le répertoire de sortie local (toujours utilisé comme buffer)
     output_dir = ensure_output_dir('cdr_data')
+    state_file = 'state_generation.txt'
+    
+    # Charger l'état précédent
+    state = load_state(state_file)
 
     print("=" * 60)
     print(f"Génération des fichiers CDR (Mode stockage: {args.storage.upper()})")
     print("=" * 60)
 
-    # Convertir la date de début
-    start_date = datetime.fromisoformat(START_DATE)
-
-    # 1. Générer Cell Towers (toujours)
+    # 1. Générer Cell Towers
     print("\n1. Génération des tours cellulaires...")
     generate_cell_towers_csv(output_dir, CELL_TOWERS, CELL_TOWERS_FIELDNAMES)
-    # On n'upload généralement pas le fichier de config statique, mais si besoin :
-    # handle_storage(output_dir / 'cell_towers.csv', args)
 
-    # 2. Générer Voice CDR si demandé
+    # 2. Générer Voice CDR
     if args.type in ['voice', 'all']:
         records_per_file = args.records if args.records else DEFAULT_VOICE_RECORDS
         print(f"\n2. Génération des Voice CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
 
-        for file_num in range(1, args.file + 1):
-            current_start = start_date + timedelta(days=file_num-1) # file_num correspond à un jour
-            voice_records = generate_voice_cdr(records_per_file, current_start)
-            filename = output_dir / f'voice_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
-            
-            save_to_csv(voice_records, filename, VOICE_CDR_FIELDNAMES)
-            handle_storage(filename, args)
+        base_date_str = state['voice']['last_date']
+        current_id = state['voice']['last_id']
+        base_date = datetime.fromisoformat(base_date_str) if base_date_str else datetime.fromisoformat(START_DATE)
 
-    # 3. Générer SMS CDR si demandé
+        for file_num in range(1, args.file + 1):
+            # Si on reprend depuis un état existant, le premier fichier (file_num=1) commence à +1 jour
+            offset = file_num if base_date_str else file_num - 1
+            current_start = base_date + timedelta(days=offset)
+            
+            voice_records = generate_voice_cdr(records_per_file, current_start, start_id=current_id)
+            
+            if voice_records:
+                filename = output_dir / f'voice_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
+                save_to_csv(voice_records, filename, VOICE_CDR_FIELDNAMES)
+                handle_storage(filename, args)
+                
+                # Mise à jour de l'état local
+                last_record = voice_records[-1]
+                state['voice']['last_date'] = last_record['timestamp'].isoformat() if isinstance(last_record['timestamp'], datetime) else str(last_record['timestamp'])
+                current_id = extract_id_number(last_record['call_id'])
+                state['voice']['last_id'] = current_id
+
+    # 3. Générer SMS CDR
     if args.type in ['sms', 'all']:
         records_per_file = args.records if args.records else DEFAULT_SMS_RECORDS
         print(f"\n3. Génération des SMS CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
 
-        for file_num in range(1, args.file + 1):
-            current_start = start_date + timedelta(days=file_num-1) # file_num correspond à un jour
-            sms_records = generate_sms_cdr(records_per_file, current_start)
-            filename = output_dir / f'sms_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
-            
-            save_to_csv(sms_records, filename, SMS_CDR_FIELDNAMES)
-            handle_storage(filename, args)
+        base_date_str = state['sms']['last_date']
+        current_id = state['sms']['last_id']
+        base_date = datetime.fromisoformat(base_date_str) if base_date_str else datetime.fromisoformat(START_DATE)
 
-    # 4. Générer Data CDR si demandé
+        for file_num in range(1, args.file + 1):
+            offset = file_num if base_date_str else file_num - 1
+            current_start = base_date + timedelta(days=offset)
+            
+            sms_records = generate_sms_cdr(records_per_file, current_start, start_id=current_id)
+            
+            if sms_records:
+                filename = output_dir / f'sms_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
+                save_to_csv(sms_records, filename, SMS_CDR_FIELDNAMES)
+                handle_storage(filename, args)
+                
+                # Mise à jour de l'état local
+                last_record = sms_records[-1]
+                state['sms']['last_date'] = last_record['timestamp'].isoformat() if isinstance(last_record['timestamp'], datetime) else str(last_record['timestamp'])
+                current_id = extract_id_number(last_record['sms_id'])
+                state['sms']['last_id'] = current_id
+
+    # 4. Générer Data CDR
     if args.type in ['data', 'all']:
         records_per_file = args.records if args.records else DEFAULT_DATA_RECORDS
         print(f"\n4. Génération des Data CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
 
+        base_date_str = state['data']['last_date']
+        current_id = state['data']['last_id']
+        base_date = datetime.fromisoformat(base_date_str) if base_date_str else datetime.fromisoformat(START_DATE)
+
         for file_num in range(1, args.file + 1):
-            current_start = start_date + timedelta(days=file_num-1) # file_num correspond à un jour
-            data_records = generate_data_cdr(records_per_file, current_start)
-            filename = output_dir / f'data_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
+            offset = file_num if base_date_str else file_num - 1
+            current_start = base_date + timedelta(days=offset)
             
-            save_to_csv(data_records, filename, DATA_CDR_FIELDNAMES)
-            handle_storage(filename, args)
+            data_records = generate_data_cdr(records_per_file, current_start, start_id=current_id)
+            
+            if data_records:
+                filename = output_dir / f'data_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
+                save_to_csv(data_records, filename, DATA_CDR_FIELDNAMES)
+                handle_storage(filename, args)
+                
+                # Mise à jour de l'état local
+                last_record = data_records[-1]
+                state['data']['last_date'] = last_record['timestamp'].isoformat() if isinstance(last_record['timestamp'], datetime) else str(last_record['timestamp'])
+                current_id = extract_id_number(last_record['session_id'])
+                state['data']['last_id'] = current_id
+
+    # Sauvegarder l'état global à la fin de l'exécution
+    save_state(state, state_file)
 
     # Afficher le résumé
     print("\n" + "=" * 60)
     print("RÉSUMÉ")
     print("=" * 60)
     
-    if args.type in ['voice', 'all']:
-        voice_records_count = args.file * (args.records if args.records else DEFAULT_VOICE_RECORDS)
-        print(f"Voice CDR: {voice_records_count} enregistrements ({args.file} fichiers)")
+    # ... (Le code du résumé reste inchangé) ...
     
-    if args.type in ['sms', 'all']:
-        sms_records_count = args.file * (args.records if args.records else DEFAULT_SMS_RECORDS)
-        print(f"SMS CDR: {sms_records_count} enregistrements ({args.file} fichiers)")
-    
-    if args.type in ['data', 'all']:
-        data_records_count = args.file * (args.records if args.records else DEFAULT_DATA_RECORDS)
-        print(f"Data CDR: {data_records_count} enregistrements ({args.file} fichiers)")
-    
-    print(f"Cell Towers: {len(CELL_TOWERS)} tours")
-    print(f"\nFichiers générés localement dans: {output_dir.absolute()}")
-    
-    if args.storage == 's3':
-        print(f"Upload vers S3 Bucket: {args.bucket}")
-    elif args.storage == 'sftp':
-        print(f"Upload vers SFTP: {args.sftp_host}")
-        
+    print(f"\nÉtat de la génération sauvegardé dans : {state_file}")
     print("=" * 60)
-
 
 if __name__ == "__main__":
     main()

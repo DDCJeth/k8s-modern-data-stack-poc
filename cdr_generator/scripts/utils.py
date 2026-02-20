@@ -5,6 +5,8 @@ Utilitaires pour le générateur de CDR
 import csv
 from pathlib import Path
 import os
+import json
+import re
 
 # Third-party imports for storage
 try:
@@ -17,6 +19,36 @@ try:
     import paramiko
 except ImportError:
     paramiko = None
+
+
+def load_state(state_file):
+    """Charge l'état de la génération depuis un fichier plat JSON."""
+    state = {
+        'voice': {'last_date': None, 'last_id': 0},
+        'sms': {'last_date': None, 'last_id': 0},
+        'data': {'last_date': None, 'last_id': 0}
+    }
+    if os.path.exists(state_file):
+        with open(state_file, 'r', encoding='utf-8') as f:
+            try:
+                loaded_state = json.load(f)
+                # Met à jour l'état par défaut avec les données du fichier
+                for key in state.keys():
+                    if key in loaded_state:
+                        state[key].update(loaded_state[key])
+            except json.JSONDecodeError:
+                print(f"Attention: {state_file} est corrompu ou illisible. Initialisation à zéro.")
+    return state
+
+def save_state(state, state_file):
+    """Sauvegarde l'état de la génération dans un fichier plat JSON."""
+    with open(state_file, 'w', encoding='utf-8') as f:
+        json.dump(state, f, indent=4)
+
+def extract_id_number(id_string):
+    """Extrait la partie numérique d'un ID (ex: 'CALL_000123' -> 123)"""
+    match = re.search(r'\d+', str(id_string))
+    return int(match.group()) if match else 0
 
 
 def save_to_csv(records, filename, fieldnames):

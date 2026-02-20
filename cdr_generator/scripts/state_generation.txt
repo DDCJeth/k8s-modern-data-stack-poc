@@ -1,0 +1,14 @@
+{
+    "voice": {
+        "last_date": "2025-10-04T23:59:52",
+        "last_id": 40000
+    },
+    "sms": {
+        "last_date": "2025-10-04T23:59:27",
+        "last_id": 20000
+    },
+    "data": {
+        "last_date": null,
+        "last_id": 0
+    }
+}

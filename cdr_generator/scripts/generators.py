@@ -3,14 +3,11 @@ Générateurs de CDR (Voice, SMS, Data)
 """
 
 import random
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from config import (
     CELL_TOWERS, CALL_TYPES, TERMINATION_REASONS, SMS_TYPES, SMS_DELIVERY_STATUS,
     APN_TYPES, SESSION_END_REASONS
 )
-
-from datetime import datetime, timedelta
-import random
 
 def generate_random_uniform_times(date_input, n_records):
     """
@@ -25,7 +22,7 @@ def generate_random_uniform_times(date_input, n_records):
     else:
         start = datetime(date_input.year, date_input.month, date_input.day)
 
-    total_seconds = 24 * 60 * 60  # 84400 secondes dans une journée
+    total_seconds = 24 * 60 * 60  # 86400 secondes dans une journée (corrigé de 84400)
 
     # Tirage uniforme des secondes
     random_seconds = sorted(random.uniform(0, total_seconds) for _ in range(n_records))
@@ -35,7 +32,6 @@ def generate_random_uniform_times(date_input, n_records):
         yield idx, current_time.strftime("%Y-%m-%dT%H:%M:%S")
 
 
-
 def generate_msisdn():
     """Génère un numéro MSISDN malien (format: 223 + 8 chiffres)"""
     prefix = random.choice(['70', '71', '72', '73', '74', '75', '76', '77', '78', '79'])
@@ -43,12 +39,9 @@ def generate_msisdn():
     return f"223{prefix}{suffix}"
 
 
-def generate_voice_cdr(num_records, start_time):
+def generate_voice_cdr(num_records, start_time, start_id=0):
     """Génère des enregistrements Voice CDR"""
     records = []
-    current_time = start_time
-
-    
 
     for i, current_time in generate_random_uniform_times(start_time, num_records):
         call_type = random.choice(CALL_TYPES)
@@ -74,7 +67,7 @@ def generate_voice_cdr(num_records, start_time):
 
         record = {
             'timestamp': current_time,
-            'call_id': f"CALL_{i+1:06d}",
+            'call_id': f"CALL_{start_id + i:06d}",
             'caller_msisdn': generate_msisdn(),
             'callee_msisdn': generate_msisdn(),
             'call_type': call_type,
@@ -89,10 +82,9 @@ def generate_voice_cdr(num_records, start_time):
     return records
 
 
-def generate_sms_cdr(num_records, start_time):
+def generate_sms_cdr(num_records, start_time, start_id=0):
     """Génère des enregistrements SMS CDR"""
     records = []
-    current_time = start_time
 
     for i, current_time in generate_random_uniform_times(start_time, num_records):
         sms_type = random.choice(SMS_TYPES)
@@ -115,7 +107,7 @@ def generate_sms_cdr(num_records, start_time):
 
         record = {
             'timestamp': current_time,
-            'sms_id': f"SMS_{i+1:06d}",
+            'sms_id': f"SMS_{start_id + i:06d}",
             'sender_msisdn': generate_msisdn(),
             'receiver_msisdn': generate_msisdn(),
             'sms_type': sms_type,
@@ -127,15 +119,12 @@ def generate_sms_cdr(num_records, start_time):
         }
         records.append(record)
 
-
-
     return records
 
 
-def generate_data_cdr(num_records, start_time):
+def generate_data_cdr(num_records, start_time, start_id=0):
     """Génère des enregistrements Data CDR"""
     records = []
-    current_time = start_time
 
     for i, current_time in generate_random_uniform_times(start_time, num_records):
         cell_tower = random.choice(CELL_TOWERS)
@@ -175,7 +164,7 @@ def generate_data_cdr(num_records, start_time):
 
         record = {
             'timestamp': current_time,
-            'session_id': f"DATA_{i+1:06d}",
+            'session_id': f"DATA_{start_id + i:06d}",
             'msisdn': generate_msisdn(),
             'apn': apn,
             'session_duration_seconds': session_duration,
