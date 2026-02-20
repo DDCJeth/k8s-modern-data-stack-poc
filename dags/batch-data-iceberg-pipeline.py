@@ -7,7 +7,7 @@ default_args = {
     'owner': 'ddcj',
     'start_date': datetime(2026, 1, 1),
     'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    'retry_delay': timedelta(minutes=1),
 }
 
 # Configuration commune pour éviter la répétition
@@ -41,15 +41,15 @@ with DAG(
         params={**COMMON_PARAMS, 'job_name': 'data-bronze', 'main_class': 'PopulateBronzeTable', 'input_path':'s3a://datalake/data/', 'logType':'data', 'table_name':'bronze.data'}
     )
 
-    # Le Sensor attend que le job Kubernetes atteigne l'état "Succeeded"
-    monitor_bronze = SparkKubernetesSensor(
-        task_id='monitor_bronze',
-        namespace=COMMON_PARAMS['namespace'],
-        application_name="{{ task_instance.xcom_pull(task_ids='submit_bronze')['metadata']['name'] }}",
-        kubernetes_conn_id='kubernetes_default',
-        poke_interval=30,  # Vérifie toutes les 30 secondes
-        timeout=3600       # Timeout après 1h
-    )
+    # # Le Sensor attend que le job Kubernetes atteigne l'état "Succeeded"
+    # monitor_bronze = SparkKubernetesSensor(
+    #     task_id='monitor_bronze',
+    #     namespace=COMMON_PARAMS['namespace'],
+    #     application_name="{{ task_instance.xcom_pull(task_ids='submit_bronze')['metadata']['name'] }}",
+    #     kubernetes_conn_id='kubernetes_default',
+    #     poke_interval=30,  # Vérifie toutes les 30 secondes
+    #     timeout=3600       # Timeout après 1h
+    # )
 
     # --- ÉTAPE SILVER ---
     silver_job = SparkKubernetesOperator(
@@ -59,13 +59,13 @@ with DAG(
         params={**COMMON_PARAMS, 'job_name': 'data-silver', 'main_class': 'DataSilverTable', 'dateToProcess': '{{ ds }}', 'input_table':'bronze.data', 'output_table':'silver.data'}
     )
 
-    monitor_silver = SparkKubernetesSensor(
-        task_id='monitor_silver',
-        namespace=COMMON_PARAMS['namespace'],
-        application_name="{{ task_instance.xcom_pull(task_ids='submit_silver')['metadata']['name'] }}",
-        kubernetes_conn_id='kubernetes_default',
-        poke_interval=30
-    )
+    # monitor_silver = SparkKubernetesSensor(
+    #     task_id='monitor_silver',
+    #     namespace=COMMON_PARAMS['namespace'],
+    #     application_name="{{ task_instance.xcom_pull(task_ids='submit_silver')['metadata']['name'] }}",
+    #     kubernetes_conn_id='kubernetes_default',
+    #     poke_interval=30
+    # )
 
 
     # --- ÉTAPE GOLD ---
@@ -76,14 +76,14 @@ with DAG(
         params={**COMMON_PARAMS, 'job_name': 'data-gold', 'main_class': 'DataGoldTables', 'dateToProcess': '{{ ds }}', 'input_table':'silver.data'}
     )
 
-    monitor_gold = SparkKubernetesSensor(
-        task_id='monitor_gold',
-        namespace=COMMON_PARAMS['namespace'],
-        application_name="{{ task_instance.xcom_pull(task_ids='submit_gold')['metadata']['name'] }}",
-        kubernetes_conn_id='kubernetes_default',
-        poke_interval=30
-    )
+    # monitor_gold = SparkKubernetesSensor(
+    #     task_id='monitor_gold',
+    #     namespace=COMMON_PARAMS['namespace'],
+    #     application_name="{{ task_instance.xcom_pull(task_ids='submit_gold')['metadata']['name'] }}",
+    #     kubernetes_conn_id='kubernetes_default',
+    #     poke_interval=30
+    # )
 
 
     # Dépendances strictes
-    bronze_job >> monitor_bronze >> silver_job >> monitor_silver >> gold_job >> monitor_gold
+    bronze_job >> silver_job >> gold_job

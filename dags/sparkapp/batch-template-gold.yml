@@ -11,7 +11,7 @@ spec:
   mainClass: {{ params.main_class }}
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
   arguments:
-    - "{{ params.dateToProcess }}"
+    - "{{ ds }}"
     - "{{ params.input_table }}"
 
   sparkVersion: "4.0.1"
