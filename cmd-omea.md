@@ -50,6 +50,7 @@ kubectl run trino-cli -ti --image=trinodb/trino:latest --restart=Never --rm=true
 ```sql
 
 --- données du POC
+/* ICEBERG*/
 select count(*) from iceberg.bronze.voice; --800000
 select count(*) from iceberg.silver.voice;
 
@@ -60,6 +61,16 @@ select count(*) from iceberg.silver.sms;
 
 select count(*) from iceberg.bronze.data;
 select count(*) from iceberg.silver.data;
+
+/* KAFKA */
+select count(*) from kafka.default."voice-bronze-cdr";
+select count(*) from kafka.default."voice-silver-cdr";
+
+select count(*) from kafka.default."sms-bronze-cdr";
+select count(*) from kafka.default."sms-silver-cdr";
+
+select count(*) from kafka.default."data-bronze-cdr";
+select count(*) from kafka.default."data-silver-cdr";
 
 -- Test trino
 SELECT * FROM tpch.sf3000.customer limit 10;

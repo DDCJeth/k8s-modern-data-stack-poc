@@ -2,7 +2,7 @@ apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
   name: data-silver-populate-topic
-  namespace: default
+  namespace: artefact
 spec:
   type: Java
   mode: cluster
@@ -77,19 +77,7 @@ spec:
         valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_SECRET_ACCESS_KEY } }
       - name: AWS_REGION
         valueFrom: { secretKeyRef: { name: minio-creds, key: AWS_REGION } }
-    
-    # Empêche de mettre l'exécuteur sur le même nœud que le driver si possible
-    affinity:
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: spark-role
-                    operator: In
-                    values: ["driver"]
-              topologyKey: "kubernetes.io/hostname"
+
 
   deps:
     packages:
