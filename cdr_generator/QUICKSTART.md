@@ -33,23 +33,23 @@ Puis ouvrez votre navigateur à `http://localhost:8501`
 cd scripts
 
 # Générer 10 fichiers Voice CDR (par défaut)
-python3 bash_generate_cdr.py --type voice
+python3 batch_generation_cdr.py --type voice
 
 # Générer 5 fichiers SMS avec 2000 enregistrements chacun
-python3 bash_generate_cdr.py --type sms --file 5 --records 2000
+python3 batch_generation_cdr.py --type sms --file 5 --records 2000
 
 # Générer tous les types (10 fichiers par défaut)
-python3 bash_generate_cdr.py --type all
+python3 batch_generation_cdr.py --type all
 ```
 
 **Exemples courants:**
 
 | Cas d'usage | Commande |
 |---|---|
-| Demo rapide (1-5 min) | `python3 bash_generate_cdr.py --type voice --file 3 --records 1000` |
-| Dataset complet | `python3 bash_generate_cdr.py --type all --file 10` |
-| Petit test | `python3 bash_generate_cdr.py --type data --file 1 --records 500` |
-| Gros volume | `python3 bash_generate_cdr.py --type all --file 20 --records 50000` |
+| Demo rapide (1-5 min) | `python3 batch_generation_cdr.py --type voice --file 3 --records 1000` |
+| Dataset complet | `python3 batch_generation_cdr.py --type all --file 10` |
+| Petit test | `python3 batch_generation_cdr.py --type data --file 1 --records 500` |
+| Gros volume | `python3 batch_generation_cdr.py --type all --file 20 --records 50000` |
 
 ---
 
@@ -118,22 +118,22 @@ wc -l cdr_data/*.csv
 cd streamlitapp && streamlit run app.py
 
 # Ou batch - Rapide
-python3 scripts/bash_generate_cdr.py --type all --file 5
+python3 scripts/batch_generation_cdr.py --type all --file 5
 ```
 
 ### Pour les Tests
 ```bash
 # Petit volume
-python3 scripts/bash_generate_cdr.py --type voice --file 1 --records 100
+python3 scripts/batch_generation_cdr.py --type voice --file 1 --records 100
 
 # Test complet
-python3 scripts/bash_generate_cdr.py --type all --file 3
+python3 scripts/batch_generation_cdr.py --type all --file 3
 ```
 
 ### Pour la Production/Integration Continue
 ```bash
 # Mode batch programmé
-python3 scripts/bash_generate_cdr.py --type all --file 10
+python3 scripts/batch_generation_cdr.py --type all --file 10
 
 # Mode streaming continu
 python3 scripts/streaming_generate_cdr.py --type all --min-delay 30 --max-delay 120

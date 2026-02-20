@@ -18,14 +18,14 @@ spec:
     spec:
       containers:
         - name: cdr-generator
-          image: ddcj/cdr-generator:v2
+          image: ddcj/cdr-generator:v2.2
           env:
             - name: PYTHONUNBUFFERED
               value: "1"
             - name: SFTP_HOST
-              value: "fileserver"
+              value: "fileserver.artefact.svc.cluster.local"
             - name: SFTP_PORT
-              value: "2222"
+              value: "9222"
             - name: SFTP_USER
               value: "foo"
             - name: SFTP_PASS

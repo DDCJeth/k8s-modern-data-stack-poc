@@ -1,8 +1,7 @@
 
 
-10/02 => Fait par Michel
-- Faire les dashboards Temps réel avec Superset et Trino connecté aux topics Kafka 
-- Determiner les Tables à completer pour le dashboard temps réel
+19/02 => Fait par Michel
+- Modifier l'application de generation des cdrs pour renommer les fichiers au format YYYYMMDDHH_XX.csv
 
 
 

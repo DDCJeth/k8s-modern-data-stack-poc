@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: cdr-generator
-          image: ddcj/cdr-generator:v2
+          image: ddcj/cdr-generator:v2.2
           env:
             - name: PYTHONUNBUFFERED
               value: "1"

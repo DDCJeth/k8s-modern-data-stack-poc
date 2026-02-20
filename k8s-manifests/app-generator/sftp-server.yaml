@@ -6,7 +6,7 @@ metadata:
 spec:
   type: ClusterIP  # Change to 'NodePort' or 'LoadBalancer' if needed for your environment
   ports:
-    - port: 2222      # External port (matches docker -p 2222:...)
+    - port: 9224  # The port that will be exposed by the service
       targetPort: 22  # Internal container port
       protocol: TCP
       name: sftp

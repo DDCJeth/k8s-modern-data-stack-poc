@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fileserver
+  namespace: artefact
+spec:
+  type: ClusterIP  # Modifiez en 'NodePort' ou 'LoadBalancer' selon vos besoins
+  ports:
+    - port: 9222   # Port exposé par le service
+      targetPort: 22 # Port interne du conteneur
+      protocol: TCP
+      name: sftp
+  selector:
+    app: fileserver
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fileserver
+  namespace: artefact
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fileserver
+  template:
+    metadata:
+      labels:
+        app: fileserver
+    spec:
+      containers:
+        - name: sftp
+
+          image: ddcj/sftp-debian:v1 
+
+          imagePullPolicy: IfNotPresent 
+          
+          env:
+            - name: SFTP_USERS
+              value: "foo:passwordSftp" # Format de notre script: "utilisateur:motdepasse"
+              
+          ports:
+            - containerPort: 22

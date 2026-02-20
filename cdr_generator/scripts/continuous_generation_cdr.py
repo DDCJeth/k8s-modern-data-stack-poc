@@ -25,19 +25,19 @@ def get_generator_config(cdr_type):
             'generator': generate_voice_cdr,
             'fieldnames': VOICE_CDR_FIELDNAMES,
             'default_records': DEFAULT_VOICE_RECORDS,
-            'filename_pattern': 'voice_cdr_mali_{:02d}.csv'
+            'filename_pattern': 'voice_cdr_{}_{:02d}.csv'
         },
         'sms': {
             'generator': generate_sms_cdr,
             'fieldnames': SMS_CDR_FIELDNAMES,
             'default_records': DEFAULT_SMS_RECORDS,
-            'filename_pattern': 'sms_cdr_mali_{:02d}.csv'
+            'filename_pattern': 'sms_cdr_{}_{:02d}.csv'
         },
         'data': {
             'generator': generate_data_cdr,
             'fieldnames': DATA_CDR_FIELDNAMES,
             'default_records': DEFAULT_DATA_RECORDS,
-            'filename_pattern': 'data_cdr_mali_{:02d}.csv'
+            'filename_pattern': 'data_cdr_{}_{:02d}.csv'
         }
     }
     return config.get(cdr_type)
@@ -98,11 +98,11 @@ def main():
             records_per_file = args.records if args.records else config['default_records']
             
             # Générer les données
-            current_start = start_date + timedelta(hours=file_num-1)
+            current_start = start_date + timedelta(days=file_num-1)
             cdr_records = config['generator'](records_per_file, current_start)
             
             # Sauvegarder en CSV
-            filename = output_dir / config['filename_pattern'].format(file_num)
+            filename = output_dir / config['filename_pattern'].format(current_start.strftime("%Y%m%d"), file_num)
             save_to_csv(cdr_records, filename, config['fieldnames'])
             handle_storage(filename, args)
             

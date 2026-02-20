@@ -5,7 +5,14 @@
 kubectl get pods -l app=cdr-generator -o jsonpath='{.items[*].metadata.name}'
 kubectl exec -it $(kubectl get pods -l app=cdr-generator -o jsonpath='{.items[*].metadata.name}') -- bash
 
+python /app/scripts/batch_generation_cdr.py --type voice --file 90 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+
 python /app/scripts/batch_generation_cdr.py --type data --file 100 --records 1000 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+
+python /app/scripts/continue_generation_cdr.py --type data --file 100 --records 1000 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+
+# 1.1 Network Tshoot
+kubectl run debug-network --rm -it --image=nicolaka/netshoot -- /bin/bash
 
 curl -v telnet://fileserver.artefact.svc.cluster.local:2222
 
@@ -17,22 +24,22 @@ cd /home/foo/upload
 ## KAFKA
 
 ```bash
+
+# List topics
+kubectl run kafka-topics-list -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-topics.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --list
+
 # Check topics
 kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-bronze-cdr --from-beginning
 
 kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-silver-cdr --from-beginning
 
 kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --topic voice-gold-cdr --from-beginning
+
+##############
+# Delete topics
+kubectl run kafka-topic-delete -ti --image=quay.io/strimzi/kafka:0.50.0-kafka-4.1.1 --rm=true --restart=Never -- bin/kafka-topics.sh --bootstrap-server cluster-kafka-bootstrap.kafka.svc.cluster.local:9092 --delete --topic sms-bronze-cdr
 ```
 
-
-## SPARK-SHELL
-```bash
-# Deploy Trino pod for client
-kubectl run sparkshell -it --rm --restart=Never  --image=ddcj/spark-job:omea-pocv0.1 -- /bin/bash -c "sleep infinity"
-kubectl exec -it sparkshell -- bash
-
-```
 
 ## TRINO CLIENT
 ```bash
@@ -111,5 +118,14 @@ WITH (
 
 INSERT INTO iceberg.test2.log VALUES (1, 'hello iceberg', 'INFO')
 
+
+```
+
+
+## SPARK-SHELL
+```bash
+# Deploy Trino pod for client
+kubectl run sparkshell -it --rm --restart=Never  --image=ddcj/spark-job:omea-pocv0.1 -- /bin/bash -c "sleep infinity"
+kubectl exec -it sparkshell -- bash
 
 ```

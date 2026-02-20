@@ -37,7 +37,7 @@ APN_TYPES = ['internet.mali', 'mms.mali', 'wap.mali']
 SESSION_END_REASONS = ['NORMAL', 'USER_TERMINATED', 'QUOTA_EXCEEDED', 'NETWORK_ERROR', 'TIMEOUT']
 
 # Date de début pour la génération
-START_DATE = '2024-12-14T08:00:00'
+START_DATE = '2025-10-01T08:00:00'
 
 # Champs CSV
 VOICE_CDR_FIELDNAMES = [

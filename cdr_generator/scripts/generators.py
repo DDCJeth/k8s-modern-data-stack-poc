@@ -3,11 +3,37 @@ Générateurs de CDR (Voice, SMS, Data)
 """
 
 import random
-from datetime import timedelta
+from datetime import timedelta, datetime
 from config import (
     CELL_TOWERS, CALL_TYPES, TERMINATION_REASONS, SMS_TYPES, SMS_DELIVERY_STATUS,
     APN_TYPES, SESSION_END_REASONS
 )
+
+from datetime import datetime, timedelta
+import random
+
+def generate_random_uniform_times(date_input, n_records):
+    """
+    Génère n_records timestamps uniformément répartis aléatoirement
+    sur une journée donnée.
+    Retourne un générateur de tuples (numero, timestamp).
+    """
+
+    # Conversion si string
+    if isinstance(date_input, str):
+        start = datetime.strptime(date_input, "%Y-%m-%d")
+    else:
+        start = datetime(date_input.year, date_input.month, date_input.day)
+
+    total_seconds = 24 * 60 * 60  # 84400 secondes dans une journée
+
+    # Tirage uniforme des secondes
+    random_seconds = sorted(random.uniform(0, total_seconds) for _ in range(n_records))
+
+    for idx, sec in enumerate(random_seconds, start=1):
+        current_time = start + timedelta(seconds=sec)
+        yield idx, current_time.strftime("%Y-%m-%dT%H:%M:%S")
+
 
 
 def generate_msisdn():
@@ -22,7 +48,9 @@ def generate_voice_cdr(num_records, start_time):
     records = []
     current_time = start_time
 
-    for i in range(num_records):
+    
+
+    for i, current_time in generate_random_uniform_times(start_time, num_records):
         call_type = random.choice(CALL_TYPES)
         cell_tower = random.choice(CELL_TOWERS)
 
@@ -45,7 +73,7 @@ def generate_voice_cdr(num_records, start_time):
             charging_amount = 0.0
 
         record = {
-            'timestamp': current_time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'timestamp': current_time,
             'call_id': f"CALL_{i+1:06d}",
             'caller_msisdn': generate_msisdn(),
             'callee_msisdn': generate_msisdn(),
@@ -58,9 +86,6 @@ def generate_voice_cdr(num_records, start_time):
         }
         records.append(record)
 
-        # Incrémenter le temps de manière aléatoire
-        current_time += timedelta(seconds=random.randint(1, 30))
-
     return records
 
 
@@ -69,7 +94,7 @@ def generate_sms_cdr(num_records, start_time):
     records = []
     current_time = start_time
 
-    for i in range(num_records):
+    for i, current_time in generate_random_uniform_times(start_time, num_records):
         sms_type = random.choice(SMS_TYPES)
         cell_tower = random.choice(CELL_TOWERS)
 
@@ -89,7 +114,7 @@ def generate_sms_cdr(num_records, start_time):
             charging_amount = 0.0
 
         record = {
-            'timestamp': current_time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'timestamp': current_time,
             'sms_id': f"SMS_{i+1:06d}",
             'sender_msisdn': generate_msisdn(),
             'receiver_msisdn': generate_msisdn(),
@@ -102,8 +127,7 @@ def generate_sms_cdr(num_records, start_time):
         }
         records.append(record)
 
-        # Incrémenter le temps
-        current_time += timedelta(seconds=random.randint(1, 20))
+
 
     return records
 
@@ -113,7 +137,7 @@ def generate_data_cdr(num_records, start_time):
     records = []
     current_time = start_time
 
-    for i in range(num_records):
+    for i, current_time in generate_random_uniform_times(start_time, num_records):
         cell_tower = random.choice(CELL_TOWERS)
         apn = random.choice(APN_TYPES)
 
@@ -150,7 +174,7 @@ def generate_data_cdr(num_records, start_time):
         charging_amount = round((total_bytes / 1024) * charging_rate, 1) if session_end_reason == 'NORMAL' else 0.0
 
         record = {
-            'timestamp': current_time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'timestamp': current_time,
             'session_id': f"DATA_{i+1:06d}",
             'msisdn': generate_msisdn(),
             'apn': apn,
@@ -163,8 +187,5 @@ def generate_data_cdr(num_records, start_time):
             'charging_amount': charging_amount
         }
         records.append(record)
-
-        # Incrémenter le temps
-        current_time += timedelta(seconds=random.randint(30, 180))
 
     return records

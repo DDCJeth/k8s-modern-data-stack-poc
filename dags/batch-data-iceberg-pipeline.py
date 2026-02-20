@@ -25,11 +25,11 @@ COMMON_PARAMS = {
 
 
 with DAG(
-    'data-iceberg-industrialized',
+    'cdr-data-iceberg-processing',
     default_args=default_args,
     schedule=None,
     # template_searchpath=['/usr/local/airflow/include'],
-    tags=['spark', 'iceberg', 'prod'],
+    tags=['spark', 'iceberg', 'prod', 'data'],
     catchup=False,
 ) as dag:
 

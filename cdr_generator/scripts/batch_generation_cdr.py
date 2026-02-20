@@ -54,9 +54,9 @@ def main():
         print(f"\n2. Génération des Voice CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
 
         for file_num in range(1, args.file + 1):
-            current_start = start_date + timedelta(hours=file_num-1)
+            current_start = start_date + timedelta(days=file_num-1) # file_num correspond à un jour
             voice_records = generate_voice_cdr(records_per_file, current_start)
-            filename = output_dir / f'voice_cdr_mali_{file_num:02d}.csv'
+            filename = output_dir / f'voice_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
             
             save_to_csv(voice_records, filename, VOICE_CDR_FIELDNAMES)
             handle_storage(filename, args)
@@ -67,9 +67,9 @@ def main():
         print(f"\n3. Génération des SMS CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
 
         for file_num in range(1, args.file + 1):
-            current_start = start_date + timedelta(hours=file_num-1)
+            current_start = start_date + timedelta(days=file_num-1) # file_num correspond à un jour
             sms_records = generate_sms_cdr(records_per_file, current_start)
-            filename = output_dir / f'sms_cdr_mali_{file_num:02d}.csv'
+            filename = output_dir / f'sms_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
             
             save_to_csv(sms_records, filename, SMS_CDR_FIELDNAMES)
             handle_storage(filename, args)
@@ -80,9 +80,9 @@ def main():
         print(f"\n4. Génération des Data CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
 
         for file_num in range(1, args.file + 1):
-            current_start = start_date + timedelta(hours=file_num-1)
+            current_start = start_date + timedelta(days=file_num-1) # file_num correspond à un jour
             data_records = generate_data_cdr(records_per_file, current_start)
-            filename = output_dir / f'data_cdr_mali_{file_num:02d}.csv'
+            filename = output_dir / f'data_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
             
             save_to_csv(data_records, filename, DATA_CDR_FIELDNAMES)
             handle_storage(filename, args)

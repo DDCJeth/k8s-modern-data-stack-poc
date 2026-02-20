@@ -5,5 +5,6 @@
   "iceberg_warehouse": "s3://spark-data/",
   "iceberg_jdbc_user": "trino",
   "iceberg_jdbc_uri": "jdbc:postgresql://postgres-trino.trino.svc.cluster.local:5432/trinodb",
-  "iceberg_jdbc_password": "***"
+  "iceberg_jdbc_password": "***",
+  "kafka_bootstrap_servers": "cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
 }
