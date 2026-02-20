@@ -18,7 +18,10 @@ spec:
     spec:
       containers:
         - name: cdr-generator
-          image: ddcj/cdr-generator:v2.3
+          image: ddcj/cdr-generator:v2.4
+          envFrom:
+          - secretRef:
+              name: "minio-creds"
           env:
             - name: PYTHONUNBUFFERED
               value: "1"

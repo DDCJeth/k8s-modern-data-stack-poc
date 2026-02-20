@@ -1,6 +1,6 @@
 """
 Interface de ligne de commande pour le générateur de CDR
-Mise à jour : Support pour les arguments de stockage (S3 et SFTP)
+Mise à jour : Support pour les arguments de stockage (S3, MinIO et SFTP)
 """
 
 import argparse
@@ -13,13 +13,16 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Exemples d'utilisation (Mode batch local):
-  python batch_generate_cdr.py --type voice --file 5 --records 1000
+  python batch_generation_cdr.py --type voice --file 5 --records 1000
 
-Exemples d'utilisation (Stockage S3):
-  python batch_generate_cdr.py --type sms --storage s3 --bucket mon-bucket-aws
+Exemples d'utilisation (Stockage AWS S3 standard):
+  python batch_generation_cdr.py --type sms --storage s3 --bucket mon-bucket-aws
+
+Exemples d'utilisation (Stockage MinIO S3):
+  python batch_generation_cdr.py --type data --storage s3 --bucket mon-bucket-minio --endpoint-url http://127.0.0.1:9000 --access-key minioadmin --secret-key minioadmin
 
 Exemples d'utilisation (Stockage SFTP):
-  python batch_generate_cdr.py --type data --storage sftp --sftp-host 192.168.1.50 --sftp-user user --sftp-password pass --sftp-path
+  python batch_generation_cdr.py --type data --storage sftp --sftp-host 192.168.1.50 --sftp-user user --sftp-password pass --sftp-path /
         '''
     )
     
@@ -59,6 +62,15 @@ Exemples d'utilisation (Stockage SFTP):
         help='Délai maximum entre les générations en mode streaming en secondes (défaut: 120)'
     )
 
+    # --- Nouveaux arguments pour la gestion de l'état ---
+    state_group = parser.add_argument_group('Options d\'état (State)')
+    
+    state_group.add_argument(
+        '--reset-state',
+        action='store_true',
+        help='Force la réinitialisation de l\'état (ignore et écrase le fichier state_generation.txt existant)'
+    )
+
     # --- Nouveaux arguments pour le stockage ---
     storage_group = parser.add_argument_group('Options de stockage')
 
@@ -69,12 +81,27 @@ Exemples d'utilisation (Stockage SFTP):
         help='Destination du stockage des fichiers (défaut: local)'
     )
 
-    # Arguments S3
-    s3_group = parser.add_argument_group('Options S3 (requis si --storage s3)')
+    # Arguments S3 et MinIO
+    s3_group = parser.add_argument_group('Options S3 / MinIO (requis si --storage s3)')
     s3_group.add_argument(
         '--bucket',
         type=str,
-        help='Nom du bucket AWS S3'
+        help='Nom du bucket AWS S3 ou MinIO'
+    )
+    s3_group.add_argument(
+        '--endpoint-url',
+        type=str,
+        help='URL du endpoint MinIO (ex: http://127.0.0.1:9000)'
+    )
+    s3_group.add_argument(
+        '--access-key',
+        type=str,
+        help='Access Key ID pour MinIO ou S3 Custom'
+    )
+    s3_group.add_argument(
+        '--secret-key',
+        type=str,
+        help='Secret Access Key pour MinIO ou S3 Custom'
     )
 
     # Arguments SFTP

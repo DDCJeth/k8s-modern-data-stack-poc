@@ -11,7 +11,7 @@ import re
 # Third-party imports for storage
 try:
     import boto3
-    from botocore.exceptions import NoCredentialsError
+    from botocore.exceptions import NoCredentialsError, ClientError
 except ImportError:
     boto3 = None
 
@@ -73,28 +73,45 @@ def ensure_output_dir(output_dir_path):
     return output_dir
 
 
-def upload_to_s3(local_file, bucket, s3_name=None):
-    """Upload un fichier vers un bucket AWS S3"""
+def upload_to_s3(local_file, bucket, s3_name=None, endpoint_url=None, access_key=None, secret_key=None):
+    """Upload un fichier vers un bucket AWS S3 ou un serveur compatible S3 comme MinIO"""
     if boto3 is None:
-        print("Erreur: 'boto3' n'est pas installé. Impossible d'utiliser S3.")
+        print("Erreur: 'boto3' n'est pas installé. Impossible d'utiliser S3/MinIO.")
         return False
 
     if s3_name is None:
         s3_name = os.path.basename(local_file)
 
-    s3 = boto3.client('s3')
+    # 1. Configuration du client boto3 pour MinIO ou S3 classique
+    if endpoint_url and access_key and secret_key:
+        # Mode MinIO (ou S3 Custom Endpoint)
+        s3 = boto3.client(
+            's3',
+            endpoint_url=endpoint_url,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
+        )
+    else:
+        # Mode AWS S3 par défaut (utilise ~/.aws/credentials ou les variables d'environnement)
+        s3 = boto3.client('s3')
+
+    # 2. Upload du fichier
     try:
         s3.upload_file(str(local_file), bucket, s3_name)
-        print(f"  [S3] Upload réussi: s3://{bucket}/{s3_name}")
+        storage_type = "MinIO" if endpoint_url else "AWS S3"
+        print(f"  [{storage_type}] Upload réussi: s3://{bucket}/{s3_name}")
         return True
     except FileNotFoundError:
-        print("  [S3] Erreur: Le fichier n'a pas été trouvé.")
+        print("  [S3/MinIO] Erreur: Le fichier n'a pas été trouvé.")
         return False
     except NoCredentialsError:
-        print("  [S3] Erreur: Credentials AWS non trouvés.")
+        print("  [S3/MinIO] Erreur: Credentials non trouvés.")
+        return False
+    except ClientError as e:
+        print(f"  [S3/MinIO] Erreur Client: {e}")
         return False
     except Exception as e:
-        print(f"  [S3] Erreur: {e}")
+        print(f"  [S3/MinIO] Erreur: {e}")
         return False
 
 
@@ -131,7 +148,13 @@ def handle_storage(file_path, args):
         if not args.bucket:
             print("  [Erreur] Argument --bucket requis pour le stockage S3")
             return
-        upload_to_s3(file_path, args.bucket)
+        upload_to_s3(
+            local_file=file_path,
+            bucket=args.bucket,
+            endpoint_url=args.endpoint_url,
+            access_key=args.access_key,
+            secret_key=args.secret_key
+        )
 
     # 3. Gestion SFTP
     elif args.storage == 'sftp':

@@ -1,9 +1,10 @@
 """
 Générateur de données CDRs
 Génère des fichiers CSV pour Voice, SMS, Data CDR et Cell Towers
-Mise à jour : Support pour upload S3, SFTP et gestion de l'état (state_generation.txt)
+Mise à jour : Support pour upload S3, MinIO, SFTP et gestion de l'état (state_generation.txt)
 """
 
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -14,7 +15,7 @@ from config import (
     DEFAULT_SMS_RECORDS, DEFAULT_DATA_RECORDS
 )
 from generators import generate_voice_cdr, generate_sms_cdr, generate_data_cdr
-from utils import save_to_csv, generate_cell_towers_csv, ensure_output_dir, upload_to_s3, upload_to_sftp, handle_storage, load_state, save_state, extract_id_number
+from utils import save_to_csv, generate_cell_towers_csv, ensure_output_dir, handle_storage, load_state, save_state, extract_id_number
 
 
 def main():
@@ -26,6 +27,11 @@ def main():
 
     output_dir = ensure_output_dir('cdr_data')
     state_file = 'state_generation.txt'
+
+    # Réinitialisation de l'état si demandé via la commande --reset-state
+    if hasattr(args, 'reset_state') and args.reset_state and os.path.exists(state_file):
+        os.remove(state_file)
+        print(f"🔄 Option --reset-state activée : Le fichier {state_file} a été réinitialisé.")
     
     # Charger l'état précédent
     state = load_state(state_file)
@@ -48,7 +54,6 @@ def main():
         base_date = datetime.fromisoformat(base_date_str) if base_date_str else datetime.fromisoformat(START_DATE)
 
         for file_num in range(1, args.file + 1):
-            # Si on reprend depuis un état existant, le premier fichier (file_num=1) commence à +1 jour
             offset = file_num if base_date_str else file_num - 1
             current_start = base_date + timedelta(days=offset)
             
@@ -57,6 +62,8 @@ def main():
             if voice_records:
                 filename = output_dir / f'voice_cdr_{current_start.strftime("%Y%m%d")}_{file_num:02d}.csv'
                 save_to_csv(voice_records, filename, VOICE_CDR_FIELDNAMES)
+                
+                # handle_storage transfère l'objet "args" complet à utils.py
                 handle_storage(filename, args)
                 
                 # Mise à jour de l'état local
@@ -124,10 +131,7 @@ def main():
     print("\n" + "=" * 60)
     print("RÉSUMÉ")
     print("=" * 60)
-    
-    # ... (Le code du résumé reste inchangé) ...
-    
-    print(f"\nÉtat de la génération sauvegardé dans : {state_file}")
+    print(f"État de la génération sauvegardé dans : {state_file}")
     print("=" * 60)
 
 if __name__ == "__main__":

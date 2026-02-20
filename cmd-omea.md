@@ -5,16 +5,24 @@
 kubectl get pods -l app=cdr-generator -o jsonpath='{.items[*].metadata.name}'
 kubectl exec -it $(kubectl get pods -l app=cdr-generator -o jsonpath='{.items[*].metadata.name}') -- bash
 
-python /app/scripts/batch_generation_cdr.py --type voice --file 90 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+## 1.1 Send to SFTP
+python /app/scripts/batch_generation_cdr.py --type voice --file 2 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
 
-python /app/scripts/batch_generation_cdr.py --type data --file 100 --records 1000 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+python /app/scripts/batch_generation_cdr.py --type sms --file 90 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
 
-python /app/scripts/continue_generation_cdr.py --type data --file 100 --records 1000 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+python /app/scripts/batch_generation_cdr.py --type data --file 90 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+
+## 1.2 Send to Minio
+python /app/scripts/batch_generation_cdr.py --type voice --file 2 --storage s3 --bucket rawdata --endpoint-url http://minio.minio.svc.cluster.local:9000 --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY
+
+# python /app/scripts/batch_generation_cdr.py --type data --file 100 --records 1000 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+
+# python /app/scripts/continue_generation_cdr.py --type data --file 100 --records 1000 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
 
 # 1.1 Network Tshoot
 kubectl run debug-network --rm -it --image=nicolaka/netshoot -- /bin/bash
 
-curl -v telnet://fileserver.artefact.svc.cluster.local:2222
+curl -v telnet://fileserver.artefact.svc.cluster.local:9222
 
 # 2. Check generated cdrs on sftp server
 kubectl exec -it $(kubectl get pods -l app=fileserver -o jsonpath='{.items[*].metadata.name}') -- bash
