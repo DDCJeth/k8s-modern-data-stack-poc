@@ -18,3 +18,8 @@ k8s-manifests/superset/superset
 dags/sparkapp/minio-creds.yaml
 tshoot.txt
 jobs/spark/omea-iceberg.conf
+datagouv/.env
+datagouv/files
+datagouv/service_configs/
+datagouv/tables/
+datagouv/glossaries/
