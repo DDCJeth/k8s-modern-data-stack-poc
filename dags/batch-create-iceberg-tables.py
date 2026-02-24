@@ -25,41 +25,39 @@ COMMON_PARAMS = {
 
 
 with DAG(
-    'cdr-sms-iceberg-processing',
+    'create-iceberg-tables',
     default_args=default_args,
     schedule=None,
-    # template_searchpath=['/usr/local/airflow/include'],
-    tags=['spark', 'iceberg', 'prod', 'sms'],
+    tags=['spark', 'iceberg', 'prod', 'bronze', 'tables', 'creation'],
     catchup=False,
 ) as dag:
 
     # --- ÉTAPE BRONZE ---
-    bronze_job = SparkKubernetesOperator(
-        task_id='submit_bronze',
+    voice_table = SparkKubernetesOperator(
+        task_id='voice_table',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='batch-template-bronze.yml',
-        params={**COMMON_PARAMS, 'job_name': 'sms-bronze', 'main_class': 'PopulateBronzeTable', 'input_path':'s3a://datalake/sms/', 'logType':'sms', 'table_name':'bronze.sms'}
+        application_file='batch-template-createTable.yml',
+        params={**COMMON_PARAMS, 'job_name': 'voice-bronze', 'main_class': 'CreateIcebergTable', 'schema_base_path':'s3a://datalake/schemas/', 'logType':'voice'}
     )
-
 
 
     # --- ÉTAPE SILVER ---
-    silver_job = SparkKubernetesOperator(
-        task_id='submit_silver',
+    data_table = SparkKubernetesOperator(
+        task_id='data_table',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='batch-template-silver.yml',
-        params={**COMMON_PARAMS, 'job_name': 'sms-silver', 'main_class': 'SmsSilverTable', 'dateToProcess': '{{ ds }}', 'input_table':'bronze.sms', 'output_table':'silver.sms'}
+        application_file='batch-template-createTable.yml',
+        params={**COMMON_PARAMS, 'job_name': 'data-bronze', 'main_class': 'CreateIcebergTable', 'schema_base_path':'s3a://datalake/schemas/', 'logType':'data'}
     )
 
     # --- ÉTAPE GOLD ---
-    gold_job = SparkKubernetesOperator(
-        task_id='submit_gold',
+    sms_table = SparkKubernetesOperator(
+        task_id='sms_table',
         namespace=COMMON_PARAMS['namespace'],
-        application_file='batch-template-gold.yml',
-        params={**COMMON_PARAMS, 'job_name': 'sms-gold', 'main_class': 'SmsGoldTables', 'dateToProcess': '{{ ds }}', 'input_table':'silver.sms'}
+        application_file='batch-template-createTable.yml',
+        params={**COMMON_PARAMS, 'job_name': 'sms-bronze', 'main_class': 'CreateIcebergTable', 'schema_base_path':'s3a://datalake/schemas/', 'logType':'sms'}
     )
 
 
-
-    # Dépendances strictes
-    bronze_job >> silver_job >> gold_job
+    # Dépendances
+    [voice_table, data_table, sms_table]
+    

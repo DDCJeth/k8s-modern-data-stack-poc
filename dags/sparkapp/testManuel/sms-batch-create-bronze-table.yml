@@ -10,7 +10,7 @@ spec:
 
   type: Java
   mode: cluster
-  image: "ddcj/spark-job:omea-pocv10"
+  image: "ddcj/spark-job:omea-pocv0.1"
   mainClass: CreateIcebergTable
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
   arguments:
@@ -34,20 +34,20 @@ spec:
     # "spark.sql.catalog.iceberg.type": "jdbc"
     "spark.sql.catalog.iceberg.jdbc.driver": "org.postgresql.Driver"
     "spark.sql.catalog.iceberg.jdbc.user": "trino"
-    "spark.sql.catalog.iceberg.jdbc.password": "***"
+    "spark.sql.catalog.iceberg.jdbc.password": "trino123"
     "spark.sql.defaultCatalog": "iceberg"
 
     # 2. JDBC Connection (The "Brain")
     "spark.sql.catalog.iceberg.uri": "jdbc:postgresql://postgres-trino.trino.svc.cluster.local:5432/trinodb"
     "spark.sql.catalog.iceberg.user": "trino"
-    "spark.sql.catalog.iceberg.password": "***"
+    "spark.sql.catalog.iceberg.password": "trino123"
 
     # 3. Iceberg Native Storage (S3FileIO - The "Mover")
     "spark.sql.catalog.iceberg.io-impl": "org.apache.iceberg.aws.s3.S3FileIO"
     "spark.sql.catalog.iceberg.warehouse": "s3://spark-data/"
     "spark.sql.catalog.iceberg.s3.endpoint": "http://minio.minio.svc.cluster.local:9000"
     "spark.sql.catalog.iceberg.s3.access-key-id": "jdanho"
-    "spark.sql.catalog.iceberg.s3.secret-access-key": "***"
+    "spark.sql.catalog.iceberg.s3.secret-access-key": "9sAf9qJ9iNYg67"
     "spark.sql.catalog.iceberg.s3.path-style-access": "true"
     "spark.sql.catalog.iceberg.s3.force-path-style": "true" 
     "spark.sql.catalog.iceberg.s3.signer-type": "standard"
@@ -55,7 +55,7 @@ spec:
     # 4. Hadoop S3A Compatibility (The "Bridge")
     "spark.hadoop.fs.s3a.endpoint": "http://minio.minio.svc.cluster.local:9000"
     "spark.hadoop.fs.s3a.access.key": "jdanho"
-    "spark.hadoop.fs.s3a.secret.key": "***"
+    "spark.hadoop.fs.s3a.secret.key": "9sAf9qJ9iNYg67"
     "spark.hadoop.fs.s3a.path.style.access": "true"
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
