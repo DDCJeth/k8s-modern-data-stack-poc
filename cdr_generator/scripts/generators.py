@@ -32,11 +32,61 @@ def generate_random_uniform_times(date_input, n_records):
         yield idx, current_time.strftime("%Y-%m-%dT%H:%M:%S")
 
 
-def generate_msisdn():
-    """Génère un numéro MSISDN malien (format: 223 + 8 chiffres)"""
-    prefix = random.choice(['70', '71', '72', '73', '74', '75', '76', '77', '78', '79'])
-    suffix = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-    return f"223{prefix}{suffix}"
+import csv
+
+def generate_msisdns(limit=1000):
+    """Génère une liste de numéros MSISDN maliens uniques."""
+    prefixes = ['70', '71', '72', '73', '74', '75', '76', '77', '78', '79']
+    msisdns = set()
+    
+    while len(msisdns) < limit:
+        prefix = random.choice(prefixes)
+        suffix = f"{random.randint(0, 999999):06d}"
+        msisdns.add(f"223{prefix}{suffix}")
+        
+    return list(msisdns)
+
+
+def generate_profil_subscribers(filename="cdr_data/Subscribers.csv", limit=1000):
+    """Crée un fichier CSV avec une liste unique de 35 noms/prénoms sans doublon de mots."""
+    
+    msisdns = generate_msisdns(limit)
+    
+    # Liste unique de 35 éléments (mélange de noms et prénoms)
+    noms_et_prenoms = [
+        'Traoré', 'Amadou', 'Diarra', 'Oumar', 'Keita', 'Fatoumata', 
+        'Diallo', 'Mariam', 'Touré', 'Awa', 'Cissé', 'Seydou', 
+        'Coulibaly', 'Ibrahim', 'Kanté', 'Aminata', 'Dembélé', 'Moussa', 
+        'Koné', 'Adama', 'Sangaré', 'Ousmane', 'Sidibé', 'Aïcha', 
+        'Sylla', 'Salif', 'Sissoko', 'Habib', 'Camara', 'Kadiatou',
+        'Sow', 'Binta', 'Maïga', 'Aliou', 'Fofana' # Les 5 nouveaux ajouts
+    ]
+    
+    start_date = datetime(1970, 1, 1)
+    end_date = datetime(2005, 12, 31)
+    
+    with open(filename, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file, delimiter=',')
+        writer.writerow(['MSISDN', 'Nom', 'Prénom', 'Date de Naissance', 'Email'])
+        
+        for msisdn in msisdns:
+            # random.sample(liste, 2) tire 2 éléments distincts de la liste
+            # Cela garantit que nom et prenom seront toujours deux mots différents
+            nom, prenom = random.sample(noms_et_prenoms, 2)
+            
+            random_days = random.randint(0, (end_date - start_date).days)
+            dob = (start_date + timedelta(days=random_days)).strftime('%Y-%m-%d')
+            
+            # Nettoyage pour les emails (gestion des trémas et accents)
+            clean_nom = nom.replace('é', 'e').replace('ï', 'i').lower()
+            clean_prenom = prenom.replace('é', 'e').replace('ï', 'i').lower()
+            email = f"{clean_prenom}.{clean_nom}{random.randint(10, 99)}@example.com"
+            
+            writer.writerow([msisdn, nom, prenom, dob, email])
+            
+    print(f"Succès ! Le fichier '{filename}' a été créé avec {limit} abonnés uniques.")
+
+
 
 
 def generate_voice_cdr(num_records, start_time, start_id=0):

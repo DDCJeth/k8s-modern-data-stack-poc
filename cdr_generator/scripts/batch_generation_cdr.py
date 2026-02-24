@@ -14,7 +14,7 @@ from config import (
     DATA_CDR_FIELDNAMES, CELL_TOWERS_FIELDNAMES, DEFAULT_VOICE_RECORDS,
     DEFAULT_SMS_RECORDS, DEFAULT_DATA_RECORDS
 )
-from generators import generate_voice_cdr, generate_sms_cdr, generate_data_cdr
+from generators import generate_voice_cdr, generate_sms_cdr, generate_data_cdr, generate_profil_subscribers
 from utils import save_to_csv, generate_cell_towers_csv, ensure_output_dir, handle_storage, load_state, save_state, extract_id_number
 
 
@@ -44,10 +44,18 @@ def main():
     print("\n1. Génération des tours cellulaires...")
     generate_cell_towers_csv(output_dir, CELL_TOWERS, CELL_TOWERS_FIELDNAMES)
 
-    # 2. Générer Voice CDR
+
+
+    # 2. Générer Profil Abonnés
+    print("\n2. Génération des profils abonnés...")
+    generate_profil_subscribers(output_dir / "Subscribers.csv", 1000)
+
+
+
+    # 3. Générer Voice CDR
     if args.type in ['voice', 'all']:
         records_per_file = args.records if args.records else DEFAULT_VOICE_RECORDS
-        print(f"\n2. Génération des Voice CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
+        print(f"\n3. Génération des Voice CDR ({args.file} fichiers de {records_per_file} enregistrements)...")
 
         base_date_str = state['voice']['last_date']
         current_id = state['voice']['last_id']

@@ -6,6 +6,8 @@ kubectl get pods -l app=cdr-generator -o jsonpath='{.items[*].metadata.name}'
 kubectl exec -it $(kubectl get pods -l app=cdr-generator -o jsonpath='{.items[*].metadata.name}') -- bash
 
 ## 1.1 Send to SFTP
+python /app/scripts/batch_generation_cdr.py --type voice --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
+
 python /app/scripts/batch_generation_cdr.py --type voice --file 2 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH
 
 python /app/scripts/batch_generation_cdr.py --type sms --file 90 --storage sftp --sftp-host $SFTP_HOST --sftp-port $SFTP_PORT --sftp-user $SFTP_USER --sftp-password $SFTP_PASS --sftp-path $SFTP_PATH

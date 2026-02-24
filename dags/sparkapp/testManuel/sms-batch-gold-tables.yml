@@ -10,11 +10,11 @@ spec:
 
   type: Java
   mode: cluster
-  image: "ddcj/spark-job:omea-pocv0.1"
+  image: "ddcj/spark-job:omea-pocv0.4"
   mainClass: SmsGoldTables
   mainApplicationFile: "local:///opt/spark/apps/app.jar"
   arguments:
-    - "2026-02-18"
+    - "2026-02-24"
     - "silver.sms"
   sparkVersion: "4.0.1"
   restartPolicy:

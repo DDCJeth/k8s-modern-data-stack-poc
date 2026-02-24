@@ -13,7 +13,7 @@ default_args = {
 # Configuration commune pour éviter la répétition
 COMMON_PARAMS = {
     'namespace': 'airflow',
-    'image': 'ddcj/spark-job:omea-pocv0.3',
+    'image': 'ddcj/spark-job:omea-pocv0.4',
     'service_account': 'spark-operator-spark',
     'secret_name': 'minio-creds',
     'driver_memory': '512m',

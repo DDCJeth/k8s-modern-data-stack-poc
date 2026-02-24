@@ -1,7 +1,21 @@
 
 
-19/02 => Fait par Michel
-- Modifier l'application de generation des cdrs pour renommer les fichiers au format YYYYMMDDHH_XX.csv
+23/02
+- Travailler sur OpenMetadata
+  - Automatiser la documentation des tables dans OpenMetadata
+  - Automatiser la création de glossaires dans Openmetadata
+  -
+   Automatiser la création des services (Airflow, Trino, etc.) dans OpenMetadata
+  -
+  - Automatiser la création des tables et leurs documentations dans OpenMetadata
+  - Automatiser la création des dashboards dans OpenMetadata
+  - Automatiser la création des pipelines dans OpenMetadata
+  - Automatiser la création des tests dans OpenMetadata
+  - Automatiser la création des tâches dans OpenMetadata
+
+
+
+
 
 
 

@@ -66,6 +66,12 @@ def generate_cell_towers_csv(output_dir, cell_towers, fieldnames):
     save_to_csv(cell_towers, filename, fieldnames)
 
 
+def generate_subscribers_csv(output_dir, subscribers, fieldnames):
+    """Génère le fichier CSV des abonnés"""
+    filename = output_dir / 'subscribers_profiles.csv'
+    save_to_csv(subscribers, filename, fieldnames)
+
+
 def ensure_output_dir(output_dir_path):
     """Crée le répertoire de sortie s'il n'existe pas"""
     output_dir = Path(output_dir_path)
